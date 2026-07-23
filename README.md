@@ -1,10 +1,10 @@
-# Sentry
+# Kamiki
 
 > An eBPF-powered network observability and packet inspection tool for Linux.
 
-Sentry is an experimental network inspection tool inspired by Wireshark, built around eBPF.
+Kamiki is an experimental network inspection tool inspired by Wireshark, built around eBPF.
 
-Instead of only capturing packets and decoding protocols, Sentry aims to connect network activity with the system context behind it: processes, PIDs, sockets, connections, and kernel-level events.
+Instead of only capturing packets and decoding protocols, Kamiki aims to connect network activity with the system context behind it: processes, PIDs, sockets, connections, and kernel-level events.
 
 The goal is to answer not only:
 
@@ -14,11 +14,11 @@ but also:
 
 > Which process sent it, where did it go, and what happened along the way?
 
-## Why Sentry?
+## Why Kamiki?
 
 Traditional packet analyzers provide deep visibility into network traffic. However, understanding which process or system activity caused a particular network event often requires combining multiple tools.
 
-Sentry explores a different architecture by using eBPF hooks inside the Linux kernel and streaming events to a userspace application.
+Kamiki explores a different architecture by using eBPF hooks inside the Linux kernel and streaming events to a userspace application.
 
 ## Architecture
 
@@ -56,7 +56,7 @@ Sentry explores a different architecture by using eBPF hooks inside the Linux ke
 
 ## Goals
 
-Sentry aims to provide:
+Kamiki aims to provide:
 
 * Live network event inspection
 * TCP and UDP flow tracking
@@ -78,7 +78,7 @@ A traditional packet view might show:
 TCP | 24 KB | 31 packets
 ```
 
-Sentry aims to associate that traffic with system context:
+Kamiki aims to associate that traffic with system context:
 
 ```text
 firefox
@@ -123,11 +123,11 @@ Communication between kernel space and userspace is planned through BPF ring buf
 
 ### Interface
 
-Sentry is planned as a native graphical application using SDL.
+Kamiki is planned as a native graphical application using SDL.
 
 ```text
 ┌──────────────────────────────────────────────────────┐
-│ Sentry                              Capture: ● LIVE  │
+│ Kamiki                              Capture: ● LIVE  │
 ├────────────┬─────────┬────────────┬───────┬──────────┤
 │ Process    │ PID     │ Remote     │ Proto │ Traffic  │
 ├────────────┼─────────┼────────────┼───────┼──────────┤
@@ -156,15 +156,15 @@ Potential eBPF userspace libraries include:
 
 ## Project Status
 
-🚧 Sentry is currently in the early development and research phase.
+🚧 Kamiki is currently in the early development and research phase.
 
 The architecture, implementation language, and capture strategy are still being explored.
 
-See [`ROADMAP.md`](./ROADMAP.md) for planned milestones and future development.
+See [`roadmap.md`](./roadmap.md) for planned milestones and future development.
 
 ## Non-Goals
 
-At least initially, Sentry is not intended to:
+At least initially, Kamiki is not intended to:
 
 * Replace Wireshark
 * Implement every protocol dissector
@@ -175,7 +175,7 @@ The initial focus is Linux network observability through eBPF.
 
 ## Inspiration
 
-Sentry is inspired by:
+Kamiki is inspired by:
 
 * Wireshark
 * tcpdump

@@ -1,8 +1,8 @@
-# Sentry Roadmap
+# Kamiki Roadmap
 
-This document tracks the planned development of Sentry.
+This document tracks the planned development of Kamiki.
 
-Sentry is an experimental eBPF-powered network observability and packet inspection tool for Linux. The roadmap is expected to evolve as capture strategies, kernel hooks, and process correlation mechanisms are explored.
+Kamiki is an experimental eBPF-powered network observability and packet inspection tool for Linux. The roadmap is expected to evolve as capture strategies, kernel hooks, and process correlation mechanisms are explored.
 
 ## Phase 0: Research and Architecture
 
@@ -57,7 +57,7 @@ Network Event
 
 ### Exit Criteria
 
-Running Sentry produces live network events in the terminal.
+Running Kamiki produces live network events in the terminal.
 
 ---
 
@@ -111,7 +111,7 @@ Extract useful metadata from observed network traffic.
 
 ### Exit Criteria
 
-Sentry can display structured metadata for IPv4 TCP and UDP traffic.
+Kamiki can display structured metadata for IPv4 TCP and UDP traffic.
 
 ---
 
@@ -144,7 +144,7 @@ protocol
 
 ### Exit Criteria
 
-Sentry maintains a live table of active network flows.
+Kamiki maintains a live table of active network flows.
 
 Example:
 
@@ -160,7 +160,7 @@ LOCAL                 REMOTE                PROTO    PACKETS    BYTES
 
 Associate network activity with the process responsible for it.
 
-This phase is one of Sentry's primary technical goals.
+This phase is one of Kamiki's primary technical goals.
 
 * [ ] Research socket-to-process correlation strategies
 * [ ] Capture PID where available
@@ -183,7 +183,7 @@ Process attribution may not be available at every network hook.
 
 For example, packet-level hooks may execute in contexts where the originating userspace process is no longer directly available.
 
-Sentry may require correlation across multiple eBPF programs and shared BPF maps.
+Kamiki may require correlation across multiple eBPF programs and shared BPF maps.
 
 Possible architecture:
 
@@ -206,7 +206,7 @@ Packet / Network Hooks
 
 ### Exit Criteria
 
-Sentry can associate a meaningful subset of TCP and UDP traffic with originating processes.
+Kamiki can associate a meaningful subset of TCP and UDP traffic with originating processes.
 
 Example:
 
@@ -366,7 +366,7 @@ Build the graphical interface using SDL.
 
 ### Exit Criteria
 
-Sentry provides a usable live graphical view of process-aware network activity.
+Kamiki provides a usable live graphical view of process-aware network activity.
 
 ---
 
@@ -402,7 +402,7 @@ Initial targets:
 
 ### Exit Criteria
 
-Sentry can provide lightweight application-protocol context without attempting to become a full protocol dissector.
+Kamiki can provide lightweight application-protocol context without attempting to become a full protocol dissector.
 
 ---
 
@@ -434,13 +434,13 @@ ssh        :22          12 ms     1              ESTABLISHED
 
 Allow captured information to be stored and analyzed later.
 
-* [ ] Define a Sentry capture format
+* [ ] Define a Kamiki capture format
 * [ ] Export events
 * [ ] Export flow summaries
 * [ ] Add JSON export
 * [ ] Add CSV export
 * [ ] Investigate PCAP interoperability
-* [ ] Load previous Sentry sessions
+* [ ] Load previous Kamiki sessions
 * [ ] Add capture metadata
 
 ---
@@ -466,7 +466,7 @@ Measure and improve behavior under real workloads.
 
 ## Phase 12: Packaging
 
-Prepare Sentry for broader use.
+Prepare Kamiki for broader use.
 
 * [ ] Define supported Linux kernel versions
 * [ ] Add reproducible build instructions
@@ -519,7 +519,7 @@ Everything else builds on this pipeline.
 
 ## Contributing
 
-Sentry is currently experimental and under active development.
+Kamiki is currently experimental and under active development.
 
 Architecture discussions, implementation ideas, bug reports, and contributions are welcome as the project evolves.
 
