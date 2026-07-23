@@ -8,14 +8,14 @@ Kamiki is an experimental eBPF-powered network observability and packet inspecti
 
 Establish the initial architecture and validate the core technical assumptions.
 
-* [ ] Choose the primary implementation language for userspace
-* [ ] Evaluate C vs Rust for the userspace collector
-* [ ] Evaluate libbpf, libbpf-rs, and Aya
-* [ ] Study Linux networking paths relevant to packet observation
-* [ ] Compare TC, XDP, socket, cgroup, tracepoint, and kprobe hooks
-* [ ] Define the kernel-to-userspace event format
-* [ ] Define initial repository structure
-* [ ] Document architecture decisions
+* [x] Choose the primary implementation language for userspace
+* [x] Evaluate C vs Rust for the userspace collector
+* [x] Evaluate libbpf, libbpf-rs, and Aya
+* [x] Study Linux networking paths relevant to packet observation
+* [x] Compare TC, XDP, socket, cgroup, tracepoint, and kprobe hooks
+* [x] Define the kernel-to-userspace event format
+* [x] Define initial repository structure
+* [x] Document architecture decisions
 
 ### Exit Criteria
 
