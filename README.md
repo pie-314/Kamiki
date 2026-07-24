@@ -140,12 +140,23 @@ Kamiki is planned as a native graphical application using SDL.
 
 ## Tech Stack
 
-The exact implementation stack is still being explored.
-
 ```text
 eBPF programs     C
-Userspace         Rust or C
-UI                SDL
+Userspace         Rust
+Web & Desktop UI  Dioxus 0.7 (Rust WASM) + Tailwind CSS + Tauri 2.0
+```
+
+## Running the Web & Desktop Interface (`feat/web-interface` branch)
+
+### Web Localhost Mode:
+```bash
+dx serve --port 1420
+```
+Open **`http://localhost:1420`** in your browser.
+
+### Native Desktop App Mode (Tauri):
+```bash
+npx tauri dev
 ```
 
 Potential eBPF userspace libraries include:
