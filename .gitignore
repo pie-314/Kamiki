@@ -1,0 +1,21 @@
+.claude
+.idea
+learnings.md
+
+# Rust
+/target/
+Cargo.lock
+
+# eBPF build artifacts
+kamiki-ebpf/out/
+*.bpf.o
+*.skel.h
+
+# vmlinux.h is kernel-specific — generate per machine
+# kamiki-ebpf/include/vmlinux.h  ← uncomment to exclude it from git
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
