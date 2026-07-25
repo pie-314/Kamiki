@@ -58,7 +58,7 @@ jobs:
 
       - name: Install bpftool from source
         run: |
-          git clone --depth 1 https://github.com/libbpf/bpftool.git
+          git clone --depth 1 --recurse-submodules https://github.com/libbpf/bpftool.git
           cd bpftool/src
           sudo make install
           bpftool version
