@@ -1,0 +1,22 @@
+[package]
+name = "kamiki-core"
+description = "Core event pipeline, data models, and eBPF collector for Kamiki"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "kamiki_core"
+path = "src/lib.rs"
+
+[dependencies]
+thiserror.workspace = true
+log.workspace = true
+crossbeam-channel.workspace = true
+dashmap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+# libbpf-rs only compiles on Linux (depends on Linux kernel headers)
+[target.'cfg(target_os = "linux")'.dependencies]
+libbpf-rs.workspace = true
