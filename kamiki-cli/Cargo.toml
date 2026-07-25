@@ -1,0 +1,17 @@
+[package]
+name = "kamiki-cli"
+description = "Command-line interface for Kamiki network observability"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "kamiki"
+path = "src/main.rs"
+
+[dependencies]
+kamiki-core = { path = "../kamiki-core" }
+clap.workspace = true
+anyhow.workspace = true
+log.workspace = true
+env_logger.workspace = true
