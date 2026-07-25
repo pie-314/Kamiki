@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Pre-push: fmt check + clippy + full test suite.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+"$ROOT/scripts/lint.sh"
+"$ROOT/scripts/test.sh"

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Pre-commit: fmt check + clippy.
+# Fix failures with:  cargo fmt --all  /  cargo clippy --workspace -- -D warnings
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+exec "$ROOT/scripts/lint.sh"
