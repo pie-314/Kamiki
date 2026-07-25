@@ -14,6 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libelf-dev zlib1g-dev
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -49,8 +54,14 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y clang llvm libbpf-dev linux-tools-generic linux-tools-$(uname -r) || \
-          sudo apt-get install -y clang llvm libbpf-dev linux-tools-generic
+          sudo apt-get install -y clang llvm libelf-dev zlib1g-dev libssl-dev
+
+      - name: Install bpftool from source
+        run: |
+          git clone --depth 1 https://github.com/libbpf/bpftool.git
+          cd bpftool/src
+          sudo make install
+          bpftool version
 
       - name: Generate vmlinux.h
         run: |
