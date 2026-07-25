@@ -1,0 +1,19 @@
+[package]
+name = "kamiki-tui"
+description = "Terminal user interface for Kamiki network observability"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "kamiki-tui"
+path = "src/main.rs"
+
+[dependencies]
+kamiki-core = { path = "../kamiki-core" }
+ratatui.workspace = true
+crossterm.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+log.workspace = true
+env_logger.workspace = true
