@@ -1,0 +1,18 @@
+[package]
+name = "kamiki-gui"
+description = "Graphical interface for Kamiki network observability (egui)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "kamiki-gui"
+path = "src/main.rs"
+
+[dependencies]
+kamiki-core = { path = "../kamiki-core" }
+eframe.workspace = true
+egui.workspace = true
+anyhow.workspace = true
+log.workspace = true
+env_logger.workspace = true
