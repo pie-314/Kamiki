@@ -13,7 +13,7 @@ struct Cli {
     #[arg(short, long, default_value = "eth0")]
     interface: String,
 
-    #[arg(short, long, default_value = "kamiki-ebpf/src/xdp_prober.bpf.o")]
+    #[arg(short, long, default_value = "kamiki-ebpf/out/xdp_prober.bpf.o")]
     object: String,
 
     #[arg(short, long)]

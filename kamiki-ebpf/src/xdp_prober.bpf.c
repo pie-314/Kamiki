@@ -1,5 +1,5 @@
 // refrence : https://github.com/xdp-project/xdp-tutorial
-#include "include/vmlinux.h" // contains all kernel data structures from BTF
+#include "../include/vmlinux.h" // contains all kernel data structures from BTF
 // bpftool btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h
 
 #include <bpf/bpf_endian.h>
