@@ -2,39 +2,28 @@
 .idea
 learnings.md
 
-# Rust
-/target/
+# Rust & eBPF build artifacts
+target/
+**/target/
 Cargo.lock
-
-# eBPF build artifacts
 kamiki-ebpf/out/
 *.bpf.o
 *.skel.h
 
-# vmlinux.h is kernel-specific — generate per machine
-# kamiki-ebpf/include/vmlinux.h  ← uncomment to exclude it from git
-
-# macOS
-.DS_Store
-
-# Logs
-*.log
-
-# Rust build target
-/target/
-/**/target/
-
 # Node dependencies & logs
-/node_modules/
+node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 # Dioxus & Tailwind build outputs
-/dist/
-/assets/tailwind.css
+dist/
+**/dist/
+assets/tailwind.css
+**/assets/tailwind.css
 
 # IDE & OS files
 .DS_Store
 Thumbs.db
-node_modules
+.vscode/
