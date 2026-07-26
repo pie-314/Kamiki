@@ -1,0 +1,12 @@
+-target
+bpf
+-O2
+-g
+-Wall
+-D__TARGET_ARCH_x86
+-I.
+-I./include
+-I./src
+-I/usr/include
+-Wno-missing-declarations
+-Wno-unknown-attributes
