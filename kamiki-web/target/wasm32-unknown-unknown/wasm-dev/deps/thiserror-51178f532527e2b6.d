@@ -1,0 +1,14 @@
+C:\Users\shahb\Kamiki\kamiki-web\target\wasm32-unknown-unknown\wasm-dev\deps\thiserror-51178f532527e2b6.d: C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\lib.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\aserror.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\display.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\var.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\private.rs C:\Users\shahb\Kamiki\kamiki-web\target\wasm32-unknown-unknown\wasm-dev\build\thiserror-cefdc88c62f81305\out/private.rs
+
+C:\Users\shahb\Kamiki\kamiki-web\target\wasm32-unknown-unknown\wasm-dev\deps\libthiserror-51178f532527e2b6.rlib: C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\lib.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\aserror.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\display.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\var.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\private.rs C:\Users\shahb\Kamiki\kamiki-web\target\wasm32-unknown-unknown\wasm-dev\build\thiserror-cefdc88c62f81305\out/private.rs
+
+C:\Users\shahb\Kamiki\kamiki-web\target\wasm32-unknown-unknown\wasm-dev\deps\libthiserror-51178f532527e2b6.rmeta: C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\lib.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\aserror.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\display.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\var.rs C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\private.rs C:\Users\shahb\Kamiki\kamiki-web\target\wasm32-unknown-unknown\wasm-dev\build\thiserror-cefdc88c62f81305\out/private.rs
+
+C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\lib.rs:
+C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\aserror.rs:
+C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\display.rs:
+C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\var.rs:
+C:\Users\shahb\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.19\src\private.rs:
+C:\Users\shahb\Kamiki\kamiki-web\target\wasm32-unknown-unknown\wasm-dev\build\thiserror-cefdc88c62f81305\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\shahb\\Kamiki\\kamiki-web\\target\\wasm32-unknown-unknown\\wasm-dev\\build\\thiserror-cefdc88c62f81305\\out
