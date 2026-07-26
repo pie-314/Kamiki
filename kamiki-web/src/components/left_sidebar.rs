@@ -1,11 +1,14 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
-use crate::data::dummy::{get_filters, get_interfaces};
+use crate::data::state::AppState;
+use crate::server::start_capture;
 
 pub fn LeftSidebar() -> Element {
-    let filters = use_signal(get_filters);
-    let interfaces = use_signal(get_interfaces);
+    let mut state = use_context::<AppState>();
+    let filters = state.protocol_counts.read();
+    let interfaces = state.interfaces.read();
+    let active_iface = state.capture.read().interface.clone();
 
     rsx! {
         aside { class: "w-52 border-r border-kamiki-border bg-kamiki-panel flex flex-col shrink-0 overflow-y-auto select-none text-xs p-2 gap-4",
@@ -46,22 +49,6 @@ pub fn LeftSidebar() -> Element {
                     }
                     span { "Processes" }
                 }
-
-                // Events
-                button { class: "flex items-center gap-2.5 px-2.5 py-1.5 rounded text-kamiki-textSecondary hover:text-kamiki-textPrimary hover:bg-kamiki-panelHover transition-colors text-left",
-                    svg { class: "w-4 h-4", fill: "none", stroke: "currentColor", view_box: "0 0 24 24",
-                        path { stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" }
-                    }
-                    span { "Events" }
-                }
-
-                // Timeline
-                button { class: "flex items-center gap-2.5 px-2.5 py-1.5 rounded text-kamiki-textSecondary hover:text-kamiki-textPrimary hover:bg-kamiki-panelHover transition-colors text-left",
-                    svg { class: "w-4 h-4", fill: "none", stroke: "currentColor", view_box: "0 0 24 24",
-                        path { stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" }
-                    }
-                    span { "Timeline" }
-                }
             }
 
             // Divider
@@ -73,7 +60,7 @@ pub fn LeftSidebar() -> Element {
                     span { "Filters" }
                 }
 
-                for item in filters.read().iter() {
+                for item in filters.iter() {
                     div { key: "{item.label}", class: "flex items-center justify-between px-2.5 py-1 rounded hover:bg-kamiki-panelHover cursor-pointer transition-colors group",
                         div { class: "flex items-center gap-2",
                             span { class: "w-2 h-2 rounded-full {item.color_class}" }
@@ -87,19 +74,41 @@ pub fn LeftSidebar() -> Element {
             // Divider
             div { class: "h-px bg-kamiki-border/60 mx-1" }
 
-            // Section 3: INTERFACES
+            // Section 3: INTERFACES (Click to start capture)
             div { class: "flex flex-col gap-1.5",
                 div { class: "px-2 py-0.5 text-[10px] font-semibold text-kamiki-textSecondary/70 uppercase tracking-wider flex items-center justify-between",
                     span { "Interfaces" }
                 }
 
-                for iface in interfaces.read().iter() {
-                    div { key: "{iface.name}", class: "flex items-center justify-between px-2.5 py-1 rounded hover:bg-kamiki-panelHover cursor-pointer transition-colors group",
-                        div { class: "flex items-center gap-2",
-                            span { class: if iface.active { "w-2 h-2 rounded-full bg-emerald-400 animate-pulse" } else { "w-2 h-2 rounded-full bg-gray-500" } }
-                            span { class: "font-mono font-medium text-kamiki-textPrimary", "{iface.name}" }
+                for iface in interfaces.iter() {
+                    {
+                        let name = iface.name.clone();
+                        let is_active = active_iface.as_ref() == Some(&name);
+
+                        rsx! {
+                            div {
+                                key: "{name}",
+                                class: if is_active {
+                                    "flex items-center justify-between px-2.5 py-1 rounded bg-kamiki-blue/10 border border-kamiki-blue/30 cursor-pointer transition-colors group"
+                                } else {
+                                    "flex items-center justify-between px-2.5 py-1 rounded hover:bg-kamiki-panelHover cursor-pointer transition-colors group"
+                                },
+                                onclick: move |_| {
+                                    let name_clone = name.clone();
+                                    spawn(async move {
+                                        let _ = start_capture(name_clone.clone()).await;
+                                        let mut cap = state.capture.write();
+                                        cap.is_live = true;
+                                        cap.interface = Some(name_clone);
+                                    });
+                                },
+                                div { class: "flex items-center gap-2",
+                                    span { class: if is_active && state.capture.read().is_live { "w-2 h-2 rounded-full bg-emerald-400 animate-pulse" } else { "w-2 h-2 rounded-full bg-gray-500" } }
+                                    span { class: "font-mono font-medium text-kamiki-textPrimary", "{iface.name}" }
+                                }
+                                span { class: "text-[11px] text-kamiki-textSecondary", "{iface.speed}" }
+                            }
                         }
-                        span { class: "text-[11px] text-kamiki-textSecondary", "{iface.speed}" }
                     }
                 }
             }

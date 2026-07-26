@@ -1,11 +1,23 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
-use crate::data::dummy::get_system_metrics;
+use crate::data::state::AppState;
 
 pub fn StatusBar() -> Element {
-    let metrics = use_signal(get_system_metrics);
-    let m = metrics.read();
+    let state = use_context::<AppState>();
+    let stats = state.stats.read();
+    let cap = state.capture.read();
+
+    let iface = cap.interface.clone().unwrap_or_else(|| stats.interface.clone());
+    let kernel = if stats.kernel.is_empty() { "Linux".into() } else { stats.kernel.clone() };
+
+    let bytes_formatted = if stats.total_bytes > 1_000_000 {
+        format!("{:.1} MB", stats.total_bytes as f64 / 1_000_000.0)
+    } else if stats.total_bytes > 1_000 {
+        format!("{:.1} KB", stats.total_bytes as f64 / 1_000.0)
+    } else {
+        format!("{} B", stats.total_bytes)
+    };
 
     rsx! {
         footer { class: "h-8 border-t border-kamiki-border bg-kamiki-panel flex items-center justify-between px-3 shrink-0 text-[11px] text-kamiki-textSecondary z-10 select-none",
@@ -13,12 +25,12 @@ pub fn StatusBar() -> Element {
             div { class: "flex items-center gap-3",
                 div { class: "flex items-center gap-1.5",
                     span { "Interface:" }
-                    span { class: "font-mono font-medium text-kamiki-textPrimary", "{m.interface}" }
+                    span { class: "font-mono font-medium text-kamiki-textPrimary", "{iface}" }
                 }
                 span { class: "text-kamiki-border", "│" }
                 div { class: "flex items-center gap-1.5 hidden sm:flex",
                     span { "Kernel:" }
-                    span { class: "font-mono font-medium text-kamiki-textPrimary", "{m.kernel}" }
+                    span { class: "font-mono font-medium text-kamiki-textPrimary truncate max-w-[180px]", "{kernel}" }
                 }
             }
 
@@ -26,38 +38,26 @@ pub fn StatusBar() -> Element {
             div { class: "flex items-center gap-4 font-mono",
                 div { class: "flex items-center gap-1.5",
                     span { class: "text-kamiki-textSecondary font-sans", "Packets:" }
-                    span { class: "font-medium text-kamiki-textPrimary", "{m.packets}" }
+                    span { class: "font-medium text-kamiki-textPrimary", "{stats.total_pkts}" }
                 }
                 span { class: "text-kamiki-border hidden md:inline", "│" }
                 div { class: "flex items-center gap-1.5 hidden md:flex",
                     span { class: "text-kamiki-textSecondary font-sans", "Bytes:" }
-                    span { class: "font-medium text-kamiki-textPrimary", "{m.bytes}" }
+                    span { class: "font-medium text-kamiki-textPrimary", "{bytes_formatted}" }
                 }
                 span { class: "text-kamiki-border hidden lg:inline", "│" }
                 div { class: "flex items-center gap-1.5 hidden lg:flex",
                     span { class: "text-kamiki-textSecondary font-sans", "Flows:" }
-                    span { class: "font-medium text-kamiki-textPrimary", "{m.flows}" }
-                }
-                span { class: "text-kamiki-border hidden lg:inline", "│" }
-                div { class: "flex items-center gap-1.5 hidden lg:flex",
-                    span { class: "text-kamiki-textSecondary font-sans", "Connections:" }
-                    span { class: "font-medium text-kamiki-textPrimary", "{m.connections}" }
+                    span { class: "font-medium text-kamiki-textPrimary", "{stats.active_flows}" }
                 }
             }
 
-            // Right Group: CPU & Memory Utilization Progress Bar
+            // Right Group: Capture Telemetry Status
             div { class: "flex items-center gap-3",
                 div { class: "flex items-center gap-1.5 font-mono",
-                    span { class: "text-kamiki-textSecondary font-sans", "CPU:" }
-                    span { class: "font-medium text-kamiki-textPrimary", "{m.cpu}" }
-                }
-                span { class: "text-kamiki-border", "│" }
-                div { class: "flex items-center gap-2 font-mono",
-                    span { class: "text-kamiki-textSecondary font-sans", "Mem:" }
-                    span { class: "font-medium text-kamiki-textPrimary", "{m.memory}" }
-                    // Memory Progress Bar
-                    div { class: "w-24 h-2 bg-kamiki-bg border border-kamiki-border rounded-full overflow-hidden flex",
-                        div { class: "h-full w-[42%] bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full" }
+                    span { class: "text-kamiki-textSecondary font-sans", "Engine:" }
+                    span { class: if cap.is_live { "font-medium text-emerald-400" } else { "font-medium text-gray-400" },
+                        if cap.is_live { "ACTIVE" } else { "READY" }
                     }
                 }
             }

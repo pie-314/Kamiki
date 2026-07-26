@@ -1,6 +1,8 @@
 mod app;
 mod components;
 mod data;
+mod server;
+
 
 use app::App;
 use dioxus::prelude::*;

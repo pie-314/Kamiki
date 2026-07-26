@@ -1,4 +1,3 @@
-
 # eBPF programs must be built on Linux (clang + libbpf required).
 # Rust workspace builds on any platform for development, but can only
 # run the collector on Linux (eBPF).
@@ -7,7 +6,7 @@ CARGO      ?= $(shell which cargo || echo cargo)
 SUDO_CARGO := sudo env PATH="$$PATH" RUSTUP_TOOLCHAIN=stable $(CARGO)
 INTERFACE  ?= eth0
 
-.PHONY: all ebpf rust build test clean fmt clippy run-cli run-tui run-gui setup
+.PHONY: all ebpf rust build test clean fmt clippy run-cli run-tui run-gui run-web run-web-dev setup
 
 
 setup:
@@ -61,6 +60,12 @@ run-tui:
 
 run-gui:
 	$(CARGO) run -p kamiki-gui
+
+run-web: ebpf
+	cd kamiki-web && npm run build:css && sudo dx serve --port 1420
+
+run-web-dev:
+	cd kamiki-web && npm run build:css && dx serve --port 1420
 
 
 clean: ebpf-clean

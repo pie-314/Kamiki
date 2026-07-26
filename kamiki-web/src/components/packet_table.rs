@@ -1,14 +1,15 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
-use crate::data::dummy::get_packets;
+use crate::data::state::AppState;
 
 pub fn PacketTable() -> Element {
-    let packets = use_signal(get_packets);
+    let mut state = use_context::<AppState>();
+    let packets = state.packets.read();
+    let selected_idx = *state.selected_packet_idx.read();
 
     rsx! {
         div { class: "bg-kamiki-panel border border-kamiki-border rounded-lg overflow-hidden flex flex-col flex-1 shadow-sm select-none text-xs min-h-[260px]",
-            // Scrollable Table Container
             div { class: "overflow-x-auto overflow-y-auto flex-1 max-h-[380px]",
                 table { class: "w-full text-left border-collapse",
                     thead {
@@ -19,65 +20,84 @@ pub fn PacketTable() -> Element {
                             th { class: "px-3 py-2 font-normal", "Source" }
                             th { class: "px-3 py-2 font-normal", "Destination" }
                             th { class: "px-3 py-2 font-normal", "Protocol" }
-                            th { class: "px-3 py-2 font-normal", "Info" }
                             th { class: "px-3 py-2 font-normal text-right", "Size" }
                         }
                     }
                     tbody { class: "divide-y divide-kamiki-border/20 font-mono text-[11px]",
-                        for (idx, pkt) in packets.read().iter().enumerate() {
+                        if packets.is_empty() {
                             tr {
-                                key: "{idx}",
-                                class: if pkt.is_selected {
-                                    "bg-kamiki-blue/20 text-kamiki-textPrimary border-l-2 border-kamiki-blue font-medium cursor-pointer transition-colors"
-                                } else {
-                                    "hover:bg-kamiki-panelHover/60 text-kamiki-textSecondary hover:text-kamiki-textPrimary cursor-pointer transition-colors"
-                                },
+                                td {
+                                    colspan: "7",
+                                    class: "px-3 py-8 text-center text-kamiki-textSecondary font-sans text-xs",
+                                    "No packets captured yet — click a network interface on the left to start live capture"
+                                }
+                            }
+                        } else {
+                            for (idx, pkt) in packets.iter().enumerate() {
+                                {
+                                    let is_selected = selected_idx == Some(idx);
+                                    let src_str = format!("{}:{}", pkt.src_ip, pkt.src_port);
+                                    let dst_str = format!("{}:{}", pkt.dst_ip, pkt.dst_port);
+                                    let proc_name = pkt.process_name.clone();
 
-                                // Time
-                                td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary", "{pkt.time}" }
+                                    rsx! {
+                                        tr {
+                                            key: "{idx}",
+                                            class: if is_selected {
+                                                "bg-kamiki-blue/20 text-kamiki-textPrimary border-l-2 border-kamiki-blue font-medium cursor-pointer transition-colors"
+                                            } else {
+                                                "hover:bg-kamiki-panelHover/60 text-kamiki-textSecondary hover:text-kamiki-textPrimary cursor-pointer transition-colors"
+                                            },
+                                            onclick: move |_| {
+                                                state.selected_packet_idx.set(Some(idx));
+                                            },
 
-                                // Process Name & Icon
-                                td { class: "px-3 py-1.5 whitespace-nowrap font-sans font-medium text-kamiki-textPrimary",
-                                    div { class: "flex items-center gap-1.5",
-                                        span { class: "text-[10px]",
-                                            if pkt.process.starts_with('f') { "🦊" }
-                                            else if pkt.process.starts_with('d') { "🎮" }
-                                            else if pkt.process.starts_with('s') && pkt.process.contains("ssh") { ">_" }
-                                            else if pkt.process.starts_with('s') && pkt.process.contains("spot") { "🎵" }
-                                            else if pkt.process.starts_with('c') { "//" }
-                                            else { "⚙" }
+                                            // Time
+                                            td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary", "{pkt.timestamp}" }
+
+                                            // Process Name & Icon
+                                            td { class: "px-3 py-1.5 whitespace-nowrap font-sans font-medium text-kamiki-textPrimary",
+                                                div { class: "flex items-center gap-1.5",
+                                                    span { class: "text-[10px]",
+                                                        if proc_name.starts_with('f') { "🦊" }
+                                                        else if proc_name.starts_with('d') { "🎮" }
+                                                        else if proc_name.starts_with('s') { ">_" }
+                                                        else if proc_name.starts_with('c') { "//" }
+                                                        else { "⚙" }
+                                                    }
+                                                    span { "{proc_name}" }
+                                                }
+                                            }
+
+                                            // PID
+                                            td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary",
+                                                if pkt.pid > 0 { "{pkt.pid}" } else { "—" }
+                                            }
+
+                                            // Source IP:Port
+                                            td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary", "{src_str}" }
+
+                                            // Destination IP:Port
+                                            td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary", "{dst_str}" }
+
+                                            // Protocol Badge
+                                            td { class: "px-3 py-1.5 whitespace-nowrap font-sans font-semibold text-[10px]",
+                                                span { class: if pkt.protocol == "TCP" {
+                                                    "px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30"
+                                                } else if pkt.protocol == "UDP" {
+                                                    "px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/30"
+                                                } else {
+                                                    "px-1.5 py-0.5 rounded bg-gray-500/15 text-gray-400 border border-gray-500/30"
+                                                },
+                                                    "{pkt.protocol}"
+                                                }
+                                            }
+
+                                            // Size (Right Aligned)
+                                            td { class: "px-3 py-1.5 whitespace-nowrap text-right font-mono font-medium text-kamiki-textPrimary", "{pkt.pkt_len}" }
                                         }
-                                        span { "{pkt.process}" }
                                     }
                                 }
-
-                                // PID
-                                td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary", "{pkt.pid}" }
-
-                                // Source IP:Port
-                                td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary", "{pkt.source}" }
-
-                                // Destination IP:Port
-                                td { class: "px-3 py-1.5 whitespace-nowrap text-kamiki-textSecondary", "{pkt.destination}" }
-
-                                // Protocol Badge
-                                td { class: "px-3 py-1.5 whitespace-nowrap font-sans font-semibold text-[10px]",
-                                    span { class: if pkt.protocol == "TCP" {
-                                        "px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30"
-                                    } else if pkt.protocol == "UDP" {
-                                        "px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/30"
-                                    } else {
-                                        "px-1.5 py-0.5 rounded bg-gray-500/15 text-gray-400 border border-gray-500/30"
-                                    },
-                                        "{pkt.protocol}"
-                                    }
-                                }
-
-                                // Info
-                                td { class: "px-3 py-1.5 truncate max-w-xs text-kamiki-textPrimary font-sans text-[11px]", "{pkt.info}" }
-
-                                // Size (Right Aligned)
-                                td { class: "px-3 py-1.5 whitespace-nowrap text-right font-mono font-medium text-kamiki-textPrimary", "{pkt.size}" }
                             }
                         }
                     }

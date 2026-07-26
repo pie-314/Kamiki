@@ -1,31 +1,75 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
-use crate::data::dummy::get_hex_dump;
+use crate::data::state::AppState;
 
 pub fn HexDump() -> Element {
-    let hex_lines = use_signal(get_hex_dump);
+    let state = use_context::<AppState>();
+    let selected_pkt = state.selected_packet();
 
     rsx! {
         div { class: "bg-kamiki-panel border border-kamiki-border rounded-lg overflow-hidden flex flex-col shadow-sm select-none text-xs",
-            // Header Bar
             div { class: "px-3 py-2 border-b border-kamiki-border/80 bg-kamiki-panel/50 flex items-center justify-between",
                 span { class: "font-semibold text-kamiki-textPrimary tracking-tight", "Hex Dump" }
+                span { class: "text-[10px] text-kamiki-textSecondary font-mono", "(Reconstructed Header)" }
             }
 
-            // Monospace Hex Dump Grid
-            div { class: "p-2.5 overflow-x-auto font-mono text-[10px] leading-relaxed text-kamiki-textSecondary bg-kamiki-bg/50",
-                for line in hex_lines.read().iter() {
-                    div { key: "{line.offset}", class: "flex items-center gap-3 hover:text-kamiki-textPrimary transition-colors py-0.5",
-                        // Offset (Muted Blue/Gray)
-                        span { class: "text-kamiki-blue/80 w-8 shrink-0 select-all", "{line.offset}" }
+            if let Some(pkt) = selected_pkt {
+                {
+                    // Reconstruct synthetic 32-byte header representation from packet metadata
+                    let mut bytes = Vec::new();
 
-                        // Hex Bytes
-                        span { class: "text-kamiki-textPrimary tracking-wider shrink-0 select-all font-medium", "{line.hex}" }
+                    // IPv4 header mock bytes (45 00 len id flags ttl proto checksum src dst)
+                    bytes.push(0x45);
+                    bytes.push(0x00);
+                    bytes.push(((pkt.pkt_len >> 8) & 0xFF) as u8);
+                    bytes.push((pkt.pkt_len & 0xFF) as u8);
+                    bytes.push(0x40);
+                    bytes.push(0x00);
+                    bytes.push(0x40); // TTL 64
+                    let proto_num = match pkt.protocol.as_str() {
+                        "TCP" => 6u8,
+                        "UDP" => 17u8,
+                        "ICMP" => 1u8,
+                        _ => 0u8,
+                    };
+                    bytes.push(proto_num);
 
-                        // ASCII Representation
-                        span { class: "text-kamiki-textSecondary/80 border-l border-kamiki-border/60 pl-3 shrink-0 select-all font-mono", "{line.ascii}" }
+                    // Ports
+                    bytes.push(((pkt.src_port >> 8) & 0xFF) as u8);
+                    bytes.push((pkt.src_port & 0xFF) as u8);
+                    bytes.push(((pkt.dst_port >> 8) & 0xFF) as u8);
+                    bytes.push((pkt.dst_port & 0xFF) as u8);
+
+                    // Padding bytes to 32 bytes
+                    while bytes.len() < 32 {
+                        bytes.push(0x00);
                     }
+
+                    let line1_hex = bytes[0..16].iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" ");
+                    let line2_hex = bytes[16..32].iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" ");
+
+                    let line1_ascii = bytes[0..16].iter().map(|b| if b.is_ascii_graphic() { *b as char } else { '.' }).collect::<String>();
+                    let line2_ascii = bytes[16..32].iter().map(|b| if b.is_ascii_graphic() { *b as char } else { '.' }).collect::<String>();
+
+                    rsx! {
+                        div { class: "p-2.5 overflow-x-auto font-mono text-[10px] leading-relaxed text-kamiki-textSecondary bg-kamiki-bg/50",
+                            div { class: "flex items-center gap-3 hover:text-kamiki-textPrimary transition-colors py-0.5",
+                                span { class: "text-kamiki-blue/80 w-8 shrink-0 select-all", "0000" }
+                                span { class: "text-kamiki-textPrimary tracking-wider shrink-0 select-all font-medium", "{line1_hex}" }
+                                span { class: "text-kamiki-textSecondary/80 border-l border-kamiki-border/60 pl-3 shrink-0 select-all font-mono", "{line1_ascii}" }
+                            }
+                            div { class: "flex items-center gap-3 hover:text-kamiki-textPrimary transition-colors py-0.5",
+                                span { class: "text-kamiki-blue/80 w-8 shrink-0 select-all", "0010" }
+                                span { class: "text-kamiki-textPrimary tracking-wider shrink-0 select-all font-medium", "{line2_hex}" }
+                                span { class: "text-kamiki-textSecondary/80 border-l border-kamiki-border/60 pl-3 shrink-0 select-all font-mono", "{line2_ascii}" }
+                            }
+                        }
+                    }
+                }
+            } else {
+                div { class: "p-4 text-center text-kamiki-textSecondary font-sans text-xs",
+                    "Select a packet to view hex dump"
                 }
             }
         }

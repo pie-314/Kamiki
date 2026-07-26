@@ -1,10 +1,67 @@
 #![allow(non_snake_case)]
 
+use std::collections::HashMap;
 use dioxus::prelude::*;
-use crate::data::dummy::get_processes;
+use crate::data::state::AppState;
+
+#[derive(Clone, Debug)]
+struct ProcessRowData {
+    name: String,
+    pid: u32,
+    pid_str: String,
+    connections: u32,
+    total_bytes: u64,
+    bytes_str: String,
+    top_remote: String,
+}
 
 pub fn TopProcessesTable() -> Element {
-    let processes = use_signal(get_processes);
+    let state = use_context::<AppState>();
+    let packets = state.packets.read();
+
+    // Aggregate packets by process_name
+    let mut proc_map: HashMap<String, (u32, u32, u64, String)> = HashMap::new();
+
+    for pkt in packets.iter() {
+        let entry = proc_map.entry(pkt.process_name.clone()).or_insert((
+            pkt.pid,
+            0,
+            0,
+            format!("{}:{}", pkt.dst_ip, pkt.dst_port),
+        ));
+
+        entry.1 += 1;
+        entry.2 += pkt.pkt_len as u64;
+    }
+
+    let mut rows: Vec<ProcessRowData> = proc_map
+        .into_iter()
+        .map(|(name, (pid, connections, total_bytes, top_remote))| {
+            let pid_str = if pid > 0 { format!("{}", pid) } else { "—".into() };
+            let bytes_str = if total_bytes > 1_000_000 {
+                format!("{:.1} MB", total_bytes as f64 / 1_000_000.0)
+            } else if total_bytes > 1_000 {
+                format!("{:.1} KB", total_bytes as f64 / 1_000.0)
+            } else {
+                format!("{} B", total_bytes)
+            };
+
+            ProcessRowData {
+                name,
+                pid,
+                pid_str,
+                connections,
+                total_bytes,
+                bytes_str,
+                top_remote,
+            }
+        })
+        .collect();
+
+    rows.sort_by(|a, b| b.total_bytes.cmp(&a.total_bytes));
+    if rows.len() > 6 {
+        rows.truncate(6);
+    }
 
     rsx! {
         div { class: "bg-kamiki-panel border border-kamiki-border rounded-lg overflow-hidden flex flex-col shadow-sm select-none text-xs",
@@ -21,60 +78,60 @@ pub fn TopProcessesTable() -> Element {
                             th { class: "px-3 py-1.5 font-normal", "Process" }
                             th { class: "px-3 py-1.5 font-normal", "PID" }
                             th { class: "px-3 py-1.5 font-normal", "Connections" }
-                            th { class: "px-3 py-1.5 font-normal", "Sent" }
-                            th { class: "px-3 py-1.5 font-normal", "Received" }
-                            th { class: "px-3 py-1.5 font-normal font-semibold text-kamiki-textPrimary", "Total" }
+                            th { class: "px-3 py-1.5 font-normal font-semibold text-kamiki-textPrimary", "Total Bytes" }
                             th { class: "px-3 py-1.5 font-normal", "Top Remote" }
                         }
                     }
                     tbody { class: "divide-y divide-kamiki-border/30",
-                        for proc in processes.read().iter() {
+                        if rows.is_empty() {
                             tr {
-                                key: "{proc.pid}",
-                                class: "hover:bg-kamiki-panelHover/60 transition-colors group",
-
-                                // Process Name & Icon
-                                td { class: "px-3 py-1.5 flex items-center gap-2 font-medium text-kamiki-textPrimary",
-                                    span { class: "w-4 h-4 flex items-center justify-center font-mono text-[10px] rounded bg-kamiki-bg border border-kamiki-border {proc.icon_color}",
-                                        if proc.name.starts_with('f') { "🦊" }
-                                        else if proc.name.starts_with('d') { "🎮" }
-                                        else if proc.name.starts_with('s') && proc.name.contains("ssh") { ">_" }
-                                        else if proc.name.starts_with('s') && proc.name.contains("spot") { "🎵" }
-                                        else if proc.name.starts_with('c') { "//" }
-                                        else { "⚙" }
-                                    }
-                                    span { "{proc.name}" }
+                                td {
+                                    colspan: "5",
+                                    class: "px-3 py-4 text-center text-kamiki-textSecondary font-mono text-[11px]",
+                                    "No process traffic recorded yet — select an interface to capture"
                                 }
+                            }
+                        } else {
+                            for proc in rows.iter() {
+                                tr {
+                                    key: "{proc.name}",
+                                    class: "hover:bg-kamiki-panelHover/60 transition-colors group",
 
-                                // PID
-                                td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary", "{proc.pid}" }
+                                    // Process Name & Icon
+                                    td { class: "px-3 py-1.5 flex items-center gap-2 font-medium text-kamiki-textPrimary",
+                                        span { class: "w-4 h-4 flex items-center justify-center font-mono text-[10px] rounded bg-kamiki-bg border border-kamiki-border text-indigo-400",
+                                            if proc.name.starts_with('f') { "🦊" }
+                                            else if proc.name.starts_with('d') { "🎮" }
+                                            else if proc.name.starts_with('s') { ">_" }
+                                            else if proc.name.starts_with('c') { "//" }
+                                            else { "⚙" }
+                                        }
+                                        span { "{proc.name}" }
+                                    }
 
-                                // Connections + Sparkline Activity Bars
-                                td { class: "px-3 py-1.5",
-                                    div { class: "flex items-center gap-2",
-                                        span { class: "font-mono font-medium text-kamiki-textPrimary w-5", "{proc.connections}" }
-                                        // Inline Activity Sparkline Bars
-                                        div { class: "flex items-end gap-[2px] h-3 w-16 opacity-80 group-hover:opacity-100 transition-opacity",
-                                            div { class: "w-1 rounded-xs bg-emerald-500", style: "height: {std::cmp::min(100, proc.connections * 2)}%" }
-                                            div { class: "w-1 rounded-xs bg-emerald-400", style: "height: {std::cmp::min(100, proc.connections * 3)}%" }
-                                            div { class: "w-1 rounded-xs bg-emerald-500", style: "height: {std::cmp::min(100, proc.connections * 1 + 20)}%" }
-                                            div { class: "w-1 rounded-xs bg-emerald-400", style: "height: {std::cmp::min(100, proc.connections * 2 + 10)}%" }
-                                            div { class: "w-1 rounded-xs bg-emerald-500", style: "height: {std::cmp::min(100, proc.connections * 3)}%" }
+                                    // PID
+                                    td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary", "{proc.pid_str}" }
+
+                                    // Connections + Sparkline Activity Bars
+                                    td { class: "px-3 py-1.5",
+                                        div { class: "flex items-center gap-2",
+                                            span { class: "font-mono font-medium text-kamiki-textPrimary w-5", "{proc.connections}" }
+                                            div { class: "flex items-end gap-[2px] h-3 w-16 opacity-80 group-hover:opacity-100 transition-opacity",
+                                                div { class: "w-1 rounded-xs bg-emerald-500", style: "height: {std::cmp::min(100, proc.connections * 2)}%" }
+                                                div { class: "w-1 rounded-xs bg-emerald-400", style: "height: {std::cmp::min(100, proc.connections * 3)}%" }
+                                                div { class: "w-1 rounded-xs bg-emerald-500", style: "height: {std::cmp::min(100, proc.connections * 1 + 20)}%" }
+                                                div { class: "w-1 rounded-xs bg-emerald-400", style: "height: {std::cmp::min(100, proc.connections * 2 + 10)}%" }
+                                                div { class: "w-1 rounded-xs bg-emerald-500", style: "height: {std::cmp::min(100, proc.connections * 3)}%" }
+                                            }
                                         }
                                     }
+
+                                    // Total Bytes (Highlighted)
+                                    td { class: "px-3 py-1.5 font-mono font-semibold text-kamiki-textPrimary", "{proc.bytes_str}" }
+
+                                    // Top Remote
+                                    td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary group-hover:text-kamiki-textPrimary transition-colors", "{proc.top_remote}" }
                                 }
-
-                                // Sent
-                                td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary", "{proc.sent}" }
-
-                                // Received
-                                td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary", "{proc.received}" }
-
-                                // Total (Highlighted)
-                                td { class: "px-3 py-1.5 font-mono font-semibold text-kamiki-textPrimary", "{proc.total}" }
-
-                                // Top Remote
-                                td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary group-hover:text-kamiki-textPrimary transition-colors", "{proc.top_remote}" }
                             }
                         }
                     }

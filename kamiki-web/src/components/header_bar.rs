@@ -1,11 +1,13 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
-use crate::data::dummy::get_capture_state;
+use crate::data::state::AppState;
 
 pub fn HeaderBar() -> Element {
-    let capture = use_signal(get_capture_state);
-    let cap = capture.read();
+    let state = use_context::<AppState>();
+    let cap = state.capture.read();
+    let uptime = cap.formatted_uptime();
+    let is_live = cap.is_live;
 
     rsx! {
         header { class: "h-12 border-b border-kamiki-border bg-kamiki-panel flex items-center justify-between px-3 shrink-0 z-10 select-none text-xs",
@@ -25,17 +27,24 @@ pub fn HeaderBar() -> Element {
                 // Live Indicator & Capture Counters
                 div { class: "flex items-center gap-3 bg-kamiki-bg/60 border border-kamiki-border px-2.5 py-1 rounded-full text-[11px]",
                     // Pulse Badge
-                    div { class: "flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20",
-                        span { class: "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" }
-                        "LIVE"
+                    if is_live {
+                        div { class: "flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-medium border border-emerald-500/20",
+                            span { class: "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" }
+                            "LIVE"
+                        }
+                    } else {
+                        div { class: "flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-500/10 text-gray-400 font-medium border border-gray-500/20",
+                            span { class: "w-1.5 h-1.5 rounded-full bg-gray-400" }
+                            "PAUSED"
+                        }
                     }
                     // Uptime
-                    span { class: "font-mono text-kamiki-textPrimary", "{cap.uptime}" }
+                    span { class: "font-mono text-kamiki-textPrimary", "{uptime}" }
                     span { class: "text-kamiki-border", "│" }
                     // Events
                     span { class: "text-kamiki-textSecondary",
                         "Events: "
-                        span { class: "text-kamiki-textPrimary font-mono font-medium", "{cap.events}" }
+                        span { class: "text-kamiki-textPrimary font-mono font-medium", "{cap.total_events}" }
                     }
                     span { class: "text-kamiki-border", "│" }
                     // Dropped
