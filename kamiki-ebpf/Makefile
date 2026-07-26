@@ -11,8 +11,8 @@ CFLAGS     := -target $(BPFTARGET) -O2 -g -Wall
 # BTF generation is needed for CO-RE (Compile Once, Run Everywhere)
 CFLAGS     += -D__TARGET_ARCH_x86
 
-BPF_SRCS   := $(wildcard $(SRC_DIR)/*.bpf.c)
-BPF_OBJS   := $(patsubst $(SRC_DIR)/%.bpf.c,$(OUT_DIR)/%.bpf.o,$(BPF_SRCS))
+BPF_SRCS   := $(wildcard $(SRC_DIR)/*/*.bpf.c)
+BPF_OBJS   := $(patsubst %.bpf.c,$(OUT_DIR)/%.bpf.o,$(notdir $(BPF_SRCS)))
 
 .PHONY: all clean skel vmlinux
 
@@ -21,7 +21,7 @@ all: $(BPF_OBJS)
 $(OUT_DIR):
 	mkdir -p $(OUT_DIR)
 
-$(OUT_DIR)/%.bpf.o: $(SRC_DIR)/%.bpf.c | $(OUT_DIR)
+$(OUT_DIR)/%.bpf.o: $(SRC_DIR)/*/%.bpf.c | $(OUT_DIR)
 	$(CLANG) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
 # Generate BPF skeleton header (used by libbpf-rs build.rs for type generation)

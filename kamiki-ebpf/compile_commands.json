@@ -1,0 +1,42 @@
+[
+  {
+    "file": "src/socket/sock_tracer.bpf.c",
+    "arguments": [
+      "/usr/bin/clang",
+      "-target",
+      "bpf",
+      "-O2",
+      "-g",
+      "-Wall",
+      "-D__TARGET_ARCH_x86",
+      "-I",
+      ".",
+      "-c",
+      "src/socket/sock_tracer.bpf.c",
+      "-o",
+      "out/sock_tracer.bpf.o"
+    ],
+    "directory": "/mnt/data/programming/Kamiki/kamiki-ebpf",
+    "output": "out/sock_tracer.bpf.o"
+  },
+  {
+    "file": "src/xdp/xdp_prober.bpf.c",
+    "arguments": [
+      "/usr/bin/clang",
+      "-target",
+      "bpf",
+      "-O2",
+      "-g",
+      "-Wall",
+      "-D__TARGET_ARCH_x86",
+      "-I",
+      ".",
+      "-c",
+      "src/xdp/xdp_prober.bpf.c",
+      "-o",
+      "out/xdp_prober.bpf.o"
+    ],
+    "directory": "/mnt/data/programming/Kamiki/kamiki-ebpf",
+    "output": "out/xdp_prober.bpf.o"
+  }
+]
