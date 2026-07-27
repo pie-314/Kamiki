@@ -1,25 +1,70 @@
 #![allow(non_snake_case)]
 
+use std::collections::VecDeque;
 use std::time::Duration;
 use dioxus::prelude::*;
 
 use crate::components::{HeaderBar, LeftSidebar, MainContent, RightSidebar, StatusBar};
-use crate::data::models::{ProtocolCount, TrafficSample};
+use crate::data::models::{CaptureState, InterfaceInfo, ProtocolCount, SystemStats, TrafficSample};
 use crate::data::state::AppState;
-use crate::server::{get_flows, get_interfaces, get_stats, poll_packets};
+use crate::server::{get_flows, get_interfaces, get_stats, poll_packets, start_capture};
 
 static TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 pub fn App() -> Element {
-    // 1. Initialize and provide global reactive state
-    let mut state = use_context_provider(AppState::new);
+    // 1. Instantiate signals directly at the top level of the App component
+    let initial_interfaces = vec![
+        InterfaceInfo { name: "eth0".into(), speed: "10 Gbps".into(), active: true },
+        InterfaceInfo { name: "wlan0".into(), speed: "866 Mbps".into(), active: true },
+        InterfaceInfo { name: "lo".into(), speed: "—".into(), active: false },
+    ];
 
+    let initial_filters = vec![
+        ProtocolCount { label: "TCP".into(), count: 0, color_class: "bg-blue-500".into() },
+        ProtocolCount { label: "UDP".into(), count: 0, color_class: "bg-purple-500".into() },
+        ProtocolCount { label: "ICMP".into(), count: 0, color_class: "bg-yellow-500".into() },
+        ProtocolCount { label: "DNS".into(), count: 0, color_class: "bg-orange-500".into() },
+        ProtocolCount { label: "TLS".into(), count: 0, color_class: "bg-cyan-500".into() },
+        ProtocolCount { label: "Other".into(), count: 0, color_class: "bg-gray-500".into() },
+    ];
 
-    // 2. Fetch network interfaces on mount
+    let mut history = VecDeque::new();
+    for _ in 0..60 {
+        history.push_back(TrafficSample::default());
+    }
+
+    let capture = use_signal(CaptureState::default);
+    let packets = use_signal(Vec::new);
+    let selected_packet_idx = use_signal(|| None);
+    let flows = use_signal(Vec::new);
+    let stats = use_signal(SystemStats::default);
+    let interfaces = use_signal(|| initial_interfaces);
+    let protocol_counts = use_signal(|| initial_filters);
+    let traffic_history = use_signal(|| history);
+
+    // Provide AppState struct via context
+    let mut state = use_context_provider(|| AppState {
+        capture,
+        packets,
+        selected_packet_idx,
+        flows,
+        stats,
+        interfaces,
+        protocol_counts,
+        traffic_history,
+    });
+
+    // 2. Fetch network interfaces on mount & auto-start capture on default interface
     use_future(move || async move {
         if let Ok(ifaces) = get_interfaces().await {
             if !ifaces.is_empty() {
+                let first_name = ifaces[0].name.clone();
                 state.interfaces.set(ifaces);
+
+                let _ = start_capture(first_name.clone()).await;
+                let mut cap = state.capture.write();
+                cap.is_live = true;
+                cap.interface = Some(first_name);
             }
         }
     });

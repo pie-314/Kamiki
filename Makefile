@@ -6,7 +6,8 @@ CARGO      ?= $(shell which cargo || echo cargo)
 SUDO_CARGO := sudo env PATH="$$PATH" RUSTUP_TOOLCHAIN=stable $(CARGO)
 INTERFACE  ?= eth0
 
-.PHONY: all ebpf rust build test clean fmt clippy run-cli run-tui run-gui run-web run-web-dev setup
+.PHONY: all ebpf rust build test clean fmt clippy run-cli run-tui run-gui run-web setup
+
 
 
 setup:
@@ -61,11 +62,10 @@ run-tui:
 run-gui:
 	$(CARGO) run -p kamiki-gui
 
-run-web: ebpf
-	cd kamiki-web && npm run build:css && sudo dx serve --port 1420
+run-web:
+	cd kamiki-web && dx build
+	sudo ./kamiki-web/dist/kamiki-web-ui --interface $(INTERFACE)
 
-run-web-dev:
-	cd kamiki-web && npm run build:css && dx serve --port 1420
 
 
 clean: ebpf-clean

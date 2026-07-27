@@ -7,7 +7,6 @@ use crate::data::state::AppState;
 #[derive(Clone, Debug)]
 struct ProcessRowData {
     name: String,
-    pid: u32,
     pid_str: String,
     connections: u32,
     total_bytes: u64,
@@ -48,7 +47,6 @@ pub fn TopProcessesTable() -> Element {
 
             ProcessRowData {
                 name,
-                pid,
                 pid_str,
                 connections,
                 total_bytes,

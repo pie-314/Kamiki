@@ -16,6 +16,8 @@ kamiki-core = { path = "../kamiki-core" }
 tokio = { version = "1", features = ["full"] }
 log = "0.4"
 env_logger = "0.11"
+clap = { version = "4", features = ["derive"] }
+
 
 # WASM Browser Dependencies
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -27,12 +29,10 @@ serde-wasm-bindgen = "0.6"
 gloo-timers = { version = "0.3", features = ["futures"] }
 
 
-[workspace]
-members = ["src-tauri"]
-
 [features]
-default = ["web", "server"]
+default = ["server"]
 web = ["dioxus/web"]
 server = ["dioxus/server"]
+
 
 
