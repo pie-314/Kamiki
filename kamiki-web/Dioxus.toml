@@ -1,6 +1,6 @@
 [application]
 name = "kamiki-web-ui"
-default_platform = "fullstack"
+default_platform = "web"
 out_dir = "dist"
 asset_dir = "assets"
 

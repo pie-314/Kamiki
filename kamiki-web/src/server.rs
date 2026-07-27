@@ -16,7 +16,10 @@ mod engine_state {
     }
 
     pub fn get_iface() -> &'static Arc<Mutex<String>> {
-        ACTIVE_IFACE.get_or_init(|| Arc::new(Mutex::new("eth0".into())))
+        ACTIVE_IFACE.get_or_init(|| {
+            let iface = std::env::var("KAMIKI_INTERFACE").unwrap_or_else(|_| "eth0".into());
+            Arc::new(Mutex::new(iface))
+        })
     }
 }
 

@@ -63,8 +63,7 @@ run-gui:
 	$(CARGO) run -p kamiki-gui
 
 run-web:
-	cd kamiki-web && dx build
-	sudo ./kamiki-web/dist/kamiki-web-ui --interface $(INTERFACE)
+	cd kamiki-web && sudo env PATH="$$PATH" RUSTUP_TOOLCHAIN=stable KAMIKI_INTERFACE=$(INTERFACE) dx serve
 
 
 
