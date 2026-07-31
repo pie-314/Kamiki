@@ -49,10 +49,23 @@ pub fn ProtocolHierarchy() -> Element {
                                         }
 
                                         if *l4_open.read() {
-                                            // Layer 7: Payload
-                                            div { class: "pl-4 text-kamiki-textSecondary hover:text-kamiki-textPrimary flex items-center gap-1.5 cursor-pointer py-0.5",
-                                                span { class: "text-[9px]", "▶" }
-                                                span { class: "font-sans", "Payload Data ({pkt.pkt_len} bytes)" }
+                                            // Layer 7: Payload Mock
+                                            if pkt.protocol == "TCP" && (pkt.src_port == 443 || pkt.dst_port == 443) {
+                                                div { class: "pl-3 flex flex-col gap-1 border-l border-kamiki-border/40 ml-1.5",
+                                                    div { class: "flex items-center gap-1.5 cursor-pointer hover:text-kamiki-textPrimary transition-colors",
+                                                        span { class: "text-[9px] w-3 text-center", "▼" }
+                                                        span { class: "font-sans font-medium text-kamiki-textPrimary", "Transport Layer Security (TLSv1.3)" }
+                                                    }
+                                                    div { class: "pl-4 text-kamiki-textSecondary flex items-center gap-1.5 py-0.5",
+                                                        span { class: "text-[9px]", "▶" }
+                                                        span { class: "font-sans", "Application Data ({pkt.pkt_len} bytes)" }
+                                                    }
+                                                }
+                                            } else {
+                                                div { class: "pl-4 text-kamiki-textSecondary hover:text-kamiki-textPrimary flex items-center gap-1.5 cursor-pointer py-0.5",
+                                                    span { class: "text-[9px]", "▶" }
+                                                    span { class: "font-sans", "Payload Data ({pkt.pkt_len} bytes)" }
+                                                }
                                             }
                                         }
                                     }

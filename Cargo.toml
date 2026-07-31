@@ -5,6 +5,7 @@ members = [
     "kamiki-tui",
     "kamiki-gui",
     "kamiki-web",
+    "kamiki-web/src-tauri",
 ]
 resolver = "3"
 

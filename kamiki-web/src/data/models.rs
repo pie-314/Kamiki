@@ -24,6 +24,8 @@ pub struct FlowData {
     pub protocol: String,
     pub packets: u64,
     pub bytes: u64,
+    pub sent_bytes: u64,
+    pub recv_bytes: u64,
 }
 
 /// System-level aggregate stats
@@ -31,6 +33,8 @@ pub struct FlowData {
 pub struct SystemStats {
     pub total_pkts: u64,
     pub total_bytes: u64,
+    pub sent_bytes: u64,
+    pub recv_bytes: u64,
     pub active_flows: u32,
     pub interface: String,
     pub kernel: String,
@@ -57,7 +61,7 @@ pub struct CaptureState {
 impl Default for CaptureState {
     fn default() -> Self {
         Self {
-            interface: Some("eth0".into()),
+            interface: None,
             is_live: false,
             uptime_secs: 0,
             total_events: 0,
@@ -79,6 +83,8 @@ impl CaptureState {
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct TrafficSample {
     pub bytes_in_window: u64,
+    pub sent_bytes_in_window: u64,
+    pub recv_bytes_in_window: u64,
     pub packets_in_window: u64,
     pub active_flows: u32,
 }

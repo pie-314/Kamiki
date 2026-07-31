@@ -2,7 +2,7 @@
 
 use dioxus::prelude::*;
 use crate::data::state::AppState;
-use crate::server::start_capture;
+use crate::api_client::start_capture;
 
 pub fn LeftSidebar() -> Element {
     let mut state = use_context::<AppState>();
@@ -48,6 +48,22 @@ pub fn LeftSidebar() -> Element {
                         path { stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: "M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" }
                     }
                     span { "Processes" }
+                }
+
+                // Events
+                button { class: "flex items-center gap-2.5 px-2.5 py-1.5 rounded text-kamiki-textSecondary hover:text-kamiki-textPrimary hover:bg-kamiki-panelHover transition-colors text-left",
+                    svg { class: "w-4 h-4", fill: "none", stroke: "currentColor", view_box: "0 0 24 24",
+                        path { stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" }
+                    }
+                    span { "Events" }
+                }
+
+                // Timeline
+                button { class: "flex items-center gap-2.5 px-2.5 py-1.5 rounded text-kamiki-textSecondary hover:text-kamiki-textPrimary hover:bg-kamiki-panelHover transition-colors text-left",
+                    svg { class: "w-4 h-4", fill: "none", stroke: "currentColor", view_box: "0 0 24 24",
+                        path { stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" }
+                    }
+                    span { "Timeline" }
                 }
             }
 

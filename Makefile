@@ -4,7 +4,7 @@
 
 CARGO      ?= $(shell which cargo || echo cargo)
 SUDO_CARGO := sudo env PATH="$$PATH" RUSTUP_TOOLCHAIN=stable $(CARGO)
-INTERFACE  ?= eth0
+INTERFACE  ?= $(shell ip route show default 2>/dev/null | awk '/default/ {print $$5}' | head -n1 || echo enp0s3)
 
 .PHONY: all ebpf rust build test clean fmt clippy run-cli run-tui run-gui run-web setup
 
@@ -63,7 +63,8 @@ run-gui:
 	$(CARGO) run -p kamiki-gui
 
 run-web:
-	cd kamiki-web && sudo env PATH="$$PATH" RUSTUP_TOOLCHAIN=stable KAMIKI_INTERFACE=$(INTERFACE) dx serve
+	cd kamiki-web && dx build
+	$(SUDO_CARGO) run -p kamiki-server -- --interface $(INTERFACE)
 
 
 

@@ -1,3 +1,4 @@
+pub mod app_icon;
 pub mod charts_row;
 pub mod header_bar;
 pub mod hex_dump;
@@ -10,6 +11,7 @@ pub mod right_sidebar;
 pub mod status_bar;
 pub mod top_processes_table;
 
+pub use app_icon::AppIcon;
 pub use charts_row::ChartsRow;
 pub use header_bar::HeaderBar;
 pub use hex_dump::HexDump;

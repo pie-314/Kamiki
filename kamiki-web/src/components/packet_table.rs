@@ -2,6 +2,7 @@
 
 use dioxus::prelude::*;
 use crate::data::state::AppState;
+use crate::components::AppIcon;
 
 pub fn PacketTable() -> Element {
     let mut state = use_context::<AppState>();
@@ -20,6 +21,7 @@ pub fn PacketTable() -> Element {
                             th { class: "px-3 py-2 font-normal", "Source" }
                             th { class: "px-3 py-2 font-normal", "Destination" }
                             th { class: "px-3 py-2 font-normal", "Protocol" }
+                            th { class: "px-3 py-2 font-normal", "Info" }
                             th { class: "px-3 py-2 font-normal text-right", "Size" }
                         }
                     }
@@ -27,7 +29,7 @@ pub fn PacketTable() -> Element {
                         if packets.is_empty() {
                             tr {
                                 td {
-                                    colspan: "7",
+                                    colspan: "8",
                                     class: "px-3 py-8 text-center text-kamiki-textSecondary font-sans text-xs",
                                     "No packets captured yet — click a network interface on the left to start live capture"
                                 }
@@ -40,11 +42,19 @@ pub fn PacketTable() -> Element {
                                     let dst_str = format!("{}:{}", pkt.dst_ip, pkt.dst_port);
                                     let proc_name = pkt.process_name.clone();
 
+                                    // Mock Info strings based on protocol
+                                    let info_str = match pkt.protocol.as_str() {
+                                        "TCP" => if pkt.src_port == 443 || pkt.dst_port == 443 { "TLSv1.3 Application Data" } else { "ACK" },
+                                        "UDP" => if pkt.src_port == 53 || pkt.dst_port == 53 { "Standard query A example.com" } else { "UDP Payload" },
+                                        "ICMP" => "Echo (ping) request",
+                                        _ => "SSH Protocol Data"
+                                    };
+
                                     rsx! {
                                         tr {
                                             key: "{idx}",
                                             class: if is_selected {
-                                                "bg-kamiki-blue/20 text-kamiki-textPrimary border-l-2 border-kamiki-blue font-medium cursor-pointer transition-colors"
+                                                "bg-[#253b59] text-kamiki-textPrimary border-l-2 border-kamiki-blue font-medium cursor-pointer transition-colors"
                                             } else {
                                                 "hover:bg-kamiki-panelHover/60 text-kamiki-textSecondary hover:text-kamiki-textPrimary cursor-pointer transition-colors"
                                             },
@@ -58,13 +68,7 @@ pub fn PacketTable() -> Element {
                                             // Process Name & Icon
                                             td { class: "px-3 py-1.5 whitespace-nowrap font-sans font-medium text-kamiki-textPrimary",
                                                 div { class: "flex items-center gap-1.5",
-                                                    span { class: "text-[10px]",
-                                                        if proc_name.starts_with('f') { "🦊" }
-                                                        else if proc_name.starts_with('d') { "🎮" }
-                                                        else if proc_name.starts_with('s') { ">_" }
-                                                        else if proc_name.starts_with('c') { "//" }
-                                                        else { "⚙" }
-                                                    }
+                                                    AppIcon { name: proc_name.clone(), class: "w-4 h-4 shrink-0".to_string() }
                                                     span { "{proc_name}" }
                                                 }
                                             }
@@ -83,15 +87,18 @@ pub fn PacketTable() -> Element {
                                             // Protocol Badge
                                             td { class: "px-3 py-1.5 whitespace-nowrap font-sans font-semibold text-[10px]",
                                                 span { class: if pkt.protocol == "TCP" {
-                                                    "px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30"
+                                                    "px-1.5 py-0.5 rounded bg-[#1f6feb] text-white border border-[#388bfd]"
                                                 } else if pkt.protocol == "UDP" {
-                                                    "px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/30"
+                                                    "px-1.5 py-0.5 rounded bg-[#8957e5] text-white border border-[#a371f7]"
                                                 } else {
-                                                    "px-1.5 py-0.5 rounded bg-gray-500/15 text-gray-400 border border-gray-500/30"
+                                                    "px-1.5 py-0.5 rounded bg-gray-600 text-white border border-gray-500"
                                                 },
                                                     "{pkt.protocol}"
                                                 }
                                             }
+
+                                            // Info
+                                            td { class: "px-3 py-1.5 whitespace-nowrap font-sans text-kamiki-textPrimary", "{info_str}" }
 
                                             // Size (Right Aligned)
                                             td { class: "px-3 py-1.5 whitespace-nowrap text-right font-mono font-medium text-kamiki-textPrimary", "{pkt.pkt_len}" }
