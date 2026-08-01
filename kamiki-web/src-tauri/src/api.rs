@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Query, State},
+    extract::Query,
     http::StatusCode,
     response::IntoResponse,
     Json,
@@ -276,4 +276,112 @@ pub async fn get_interfaces() -> Json<Vec<InterfaceInfo>> {
         ];
     }
     Json(ifaces)
+}
+
+#[derive(Deserialize)]
+pub struct IconQuery {
+    name: String,
+}
+
+pub async fn get_app_icon(Query(query): Query<IconQuery>) -> impl IntoResponse {
+    let name = query.name.trim().to_lowercase();
+
+    if let Some((bytes, mime)) = find_system_icon(&name) {
+        return (
+            StatusCode::OK,
+            [
+                (axum::http::header::CONTENT_TYPE, mime),
+                (axum::http::header::CACHE_CONTROL, "public, max-age=86400"),
+            ],
+            bytes,
+        ).into_response();
+    }
+
+    // Fallback system gear icon SVG
+    let default_svg = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" fill="#161b22"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg>"##;
+
+    (
+        StatusCode::OK,
+        [
+            (axum::http::header::CONTENT_TYPE, "image/svg+xml"),
+            (axum::http::header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
+        default_svg.as_bytes().to_vec(),
+    ).into_response()
+}
+
+fn find_system_icon(app_name: &str) -> Option<(Vec<u8>, &'static str)> {
+    if app_name.is_empty() || app_name == "—" {
+        return None;
+    }
+
+    let clean_name = app_name.split('/').last().unwrap_or(app_name).to_lowercase();
+    let stem = clean_name.split('.').next().unwrap_or(&clean_name);
+
+    let candidate_names = match stem {
+        "ssh" | "bash" | "zsh" | "sh" | "konsole" | "gnome-terminal" | "alacritty" | "kitty" => {
+            vec![stem, "utilities-terminal", "terminal", "org.gnome.Terminal", "bash"]
+        }
+        "python" | "python3" => vec![stem, "python", "python3", "applications-other"],
+        "curl" | "wget" => vec![stem, "network-transmit-receive", "utilities-terminal", "network-workgroup"],
+        "systemd" | "systemd-resolve" | "systemd-journal" => vec![stem, "system-run", "applications-system", "system-software-update"],
+        _ => vec![stem],
+    };
+
+    let search_dirs = [
+        "/usr/share/icons/hicolor/scalable/apps",
+        "/usr/share/icons/hicolor/48x48/apps",
+        "/usr/share/icons/hicolor/128x128/apps",
+        "/usr/share/icons/hicolor/256x256/apps",
+        "/usr/share/icons/Yaru/scalable/apps",
+        "/usr/share/icons/Yaru/48x48/apps",
+        "/usr/share/icons/Adwaita/scalable/apps",
+        "/usr/share/pixmaps",
+    ];
+
+    let extensions = [
+        ("svg", "image/svg+xml"),
+        ("png", "image/png"),
+        ("xpm", "image/x-xpixmap"),
+    ];
+
+    for name in &candidate_names {
+        for dir in &search_dirs {
+            for (ext, mime) in &extensions {
+                let path = format!("{}/{}.{}", dir, name, ext);
+                if let Ok(bytes) = std::fs::read(&path) {
+                    return Some((bytes, mime));
+                }
+
+                let symbolic_path = format!("{}/{}-symbolic.{}", dir, name, ext);
+                if let Ok(bytes) = std::fs::read(&symbolic_path) {
+                    return Some((bytes, mime));
+                }
+            }
+        }
+    }
+
+    // Check desktop files in /usr/share/applications
+    for name in &candidate_names {
+        let desktop_path = format!("/usr/share/applications/{}.desktop", name);
+        if let Ok(content) = std::fs::read_to_string(&desktop_path) {
+            for line in content.lines() {
+                if let Some(icon_val) = line.strip_prefix("Icon=") {
+                    let icon_name = icon_val.trim();
+                    if icon_name != *name {
+                        for dir in &search_dirs {
+                            for (ext, mime) in &extensions {
+                                let path = format!("{}/{}.{}", dir, icon_name, ext);
+                                if let Ok(bytes) = std::fs::read(&path) {
+                                    return Some((bytes, mime));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    None
 }

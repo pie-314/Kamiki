@@ -42,6 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/poll", get(api::poll_packets))
         .route("/api/flows", get(api::get_flows))
         .route("/api/stats", get(api::get_stats))
+        .route("/api/icon", get(api::get_app_icon))
         .fallback_service(ServeDir::new("target/dx/kamiki-web-ui/debug/web/public"))
         .layer(cors);
 

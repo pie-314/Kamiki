@@ -2,6 +2,16 @@ use dioxus::prelude::*;
 use std::collections::VecDeque;
 use crate::data::models::{CaptureState, FlowData, InterfaceInfo, PacketEvent, ProtocolCount, SystemStats, TrafficSample};
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NavView {
+    Dashboard,
+    Connections,
+    Packets,
+    Processes,
+    Events,
+    Timeline,
+}
+
 #[derive(Clone, Copy)]
 pub struct AppState {
     pub capture: Signal<CaptureState>,
@@ -12,6 +22,9 @@ pub struct AppState {
     pub interfaces: Signal<Vec<InterfaceInfo>>,
     pub protocol_counts: Signal<Vec<ProtocolCount>>,
     pub traffic_history: Signal<VecDeque<TrafficSample>>,
+    pub active_view: Signal<NavView>,
+    pub selected_filter: Signal<Option<String>>,
+    pub search_query: Signal<String>,
 }
 
 impl AppState {

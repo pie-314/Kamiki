@@ -30,11 +30,23 @@ fn format_bytes(bytes: u64) -> String {
 pub fn TopProcessesTable() -> Element {
     let state = use_context::<AppState>();
     let packets = state.packets.read();
+    let search_query = state.search_query.read().clone();
 
     // Aggregate packets by process_name
     let mut proc_map: HashMap<String, (u32, u32, u64, u64, u64, String)> = HashMap::new();
 
     for pkt in packets.iter() {
+        if !search_query.trim().is_empty() {
+            let q = search_query.trim().to_lowercase();
+            let clean_q = q.replace("\"", "");
+
+            let matches = pkt.process_name.to_lowercase().contains(&clean_q)
+                || pkt.protocol.to_lowercase().contains(&clean_q)
+                || pkt.dst_ip.contains(&clean_q)
+                || pkt.src_ip.contains(&clean_q)
+                || pkt.dst_port.to_string().contains(&clean_q);
+            if !matches { continue; }
+        }
         let entry = proc_map.entry(pkt.process_name.clone()).or_insert((
             pkt.pid,
             0,

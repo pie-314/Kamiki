@@ -6,7 +6,7 @@ use dioxus::prelude::*;
 
 use crate::components::{HeaderBar, LeftSidebar, MainContent, RightSidebar, StatusBar};
 use crate::data::models::{CaptureState, InterfaceInfo, ProtocolCount, SystemStats, TrafficSample};
-use crate::data::state::AppState;
+use crate::data::state::{AppState, NavView};
 use crate::api_client::{get_flows, get_interfaces, get_stats, poll_packets, start_capture};
 
 static TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
@@ -36,6 +36,9 @@ pub fn App() -> Element {
     let interfaces = use_signal(|| initial_interfaces);
     let protocol_counts = use_signal(|| initial_filters);
     let traffic_history = use_signal(|| history);
+    let active_view = use_signal(|| NavView::Dashboard);
+    let selected_filter = use_signal(|| None);
+    let search_query = use_signal(String::new);
 
     let mut state = use_context_provider(|| AppState {
         capture,
@@ -46,6 +49,9 @@ pub fn App() -> Element {
         interfaces,
         protocol_counts,
         traffic_history,
+        active_view,
+        selected_filter,
+        search_query,
     });
 
     use_future(move || async move {
@@ -170,8 +176,6 @@ pub fn App() -> Element {
 
     rsx! {
         link { rel: "stylesheet", href: TAILWIND_CSS }
-        link { rel: "stylesheet", href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" }
-        link { rel: "stylesheet", href: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" }
         main { class: "h-screen w-screen bg-kamiki-bg text-kamiki-textPrimary flex flex-col overflow-hidden font-sans antialiased select-none",
             HeaderBar {}
             div { class: "flex-1 flex overflow-hidden min-h-0",
