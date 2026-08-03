@@ -1,0 +1,18 @@
+[package]
+name = "kamiki-server"
+version = "0.1.0"
+description = "Kamiki eBPF Network Inspector Server"
+authors = ["Kamiki Contributors"]
+edition = "2024"
+
+[dependencies]
+kamiki-core = { path = "../../kamiki-core" }
+tokio = { version = "1.40", features = ["full"] }
+axum = "0.7.7"
+tower-http = { version = "0.6", features = ["fs", "cors"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+log = "0.4"
+env_logger = "0.11"
+open = "5.3.0"

@@ -188,4 +188,3 @@ Kamiki is inspired by:
 ## License
 
 TBD
-
