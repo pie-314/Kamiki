@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
-use crate::data::state::{AppState, NavView};
 use crate::components::{AppIcon, ChartsRow, PacketTable, TopProcessesTable};
+use crate::data::state::{AppState, NavView};
+use dioxus::prelude::*;
 
 pub fn MainContent() -> Element {
     let state = use_context::<AppState>();

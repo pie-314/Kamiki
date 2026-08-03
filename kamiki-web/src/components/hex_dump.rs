@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::data::state::AppState;
+use dioxus::prelude::*;
 
 pub fn HexDump() -> Element {
     let state = use_context::<AppState>();
@@ -17,23 +17,23 @@ pub fn HexDump() -> Element {
             if let Some(pkt) = selected_pkt {
                 {
                     // Reconstruct synthetic 32-byte header representation from packet metadata
-                    let mut bytes = Vec::new();
-
-                    // IPv4 header mock bytes (45 00 len id flags ttl proto checksum src dst)
-                    bytes.push(0x45);
-                    bytes.push(0x00);
-                    bytes.push(((pkt.pkt_len >> 8) & 0xFF) as u8);
-                    bytes.push((pkt.pkt_len & 0xFF) as u8);
-                    bytes.push(0x40);
-                    bytes.push(0x00);
-                    bytes.push(0x40); // TTL 64
                     let proto_num = match pkt.protocol.as_str() {
                         "TCP" => 6u8,
                         "UDP" => 17u8,
                         "ICMP" => 1u8,
                         _ => 0u8,
                     };
-                    bytes.push(proto_num);
+
+                    let mut bytes = vec![
+                        0x45,
+                        0x00,
+                        ((pkt.pkt_len >> 8) & 0xFF) as u8,
+                        (pkt.pkt_len & 0xFF) as u8,
+                        0x40,
+                        0x00,
+                        0x40, // TTL 64
+                        proto_num,
+                    ];
 
                     // Ports
                     bytes.push(((pkt.src_port >> 8) & 0xFF) as u8);

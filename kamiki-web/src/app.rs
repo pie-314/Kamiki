@@ -1,13 +1,13 @@
 #![allow(non_snake_case)]
 
+use dioxus::prelude::*;
 use std::collections::VecDeque;
 use std::time::Duration;
-use dioxus::prelude::*;
 
+use crate::api_client::{get_flows, get_interfaces, get_stats, poll_packets, start_capture};
 use crate::components::{HeaderBar, LeftSidebar, MainContent, RightSidebar, StatusBar};
 use crate::data::models::{CaptureState, InterfaceInfo, ProtocolCount, SystemStats, TrafficSample};
 use crate::data::state::{AppState, NavView};
-use crate::api_client::{get_flows, get_interfaces, get_stats, poll_packets, start_capture};
 
 static TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
@@ -15,12 +15,36 @@ pub fn App() -> Element {
     let initial_interfaces: Vec<InterfaceInfo> = Vec::new();
 
     let initial_filters = vec![
-        ProtocolCount { label: "TCP".into(), count: 0, color_class: "bg-blue-500".into() },
-        ProtocolCount { label: "UDP".into(), count: 0, color_class: "bg-purple-500".into() },
-        ProtocolCount { label: "ICMP".into(), count: 0, color_class: "bg-yellow-500".into() },
-        ProtocolCount { label: "DNS".into(), count: 0, color_class: "bg-orange-500".into() },
-        ProtocolCount { label: "TLS".into(), count: 0, color_class: "bg-cyan-500".into() },
-        ProtocolCount { label: "Other".into(), count: 0, color_class: "bg-gray-500".into() },
+        ProtocolCount {
+            label: "TCP".into(),
+            count: 0,
+            color_class: "bg-blue-500".into(),
+        },
+        ProtocolCount {
+            label: "UDP".into(),
+            count: 0,
+            color_class: "bg-purple-500".into(),
+        },
+        ProtocolCount {
+            label: "ICMP".into(),
+            count: 0,
+            color_class: "bg-yellow-500".into(),
+        },
+        ProtocolCount {
+            label: "DNS".into(),
+            count: 0,
+            color_class: "bg-orange-500".into(),
+        },
+        ProtocolCount {
+            label: "TLS".into(),
+            count: 0,
+            color_class: "bg-cyan-500".into(),
+        },
+        ProtocolCount {
+            label: "Other".into(),
+            count: 0,
+            color_class: "bg-gray-500".into(),
+        },
     ];
 
     let mut history = VecDeque::new();
@@ -58,8 +82,9 @@ pub fn App() -> Element {
         if let Ok(ifaces) = get_interfaces().await {
             if !ifaces.is_empty() {
                 state.interfaces.set(ifaces.clone());
-                
-                let target_iface = ifaces.iter()
+
+                let target_iface = ifaces
+                    .iter()
                     .find(|i| i.active && i.name != "lo")
                     .or_else(|| ifaces.iter().find(|i| i.name != "lo"))
                     .map(|i| i.name.clone())
@@ -126,18 +151,42 @@ pub fn App() -> Element {
                         cap.total_events += new_pkts.len() as u64;
 
                         let updated_counts = vec![
-                            ProtocolCount { label: "TCP".into(), count: tcp_cnt, color_class: "bg-blue-500".into() },
-                            ProtocolCount { label: "UDP".into(), count: udp_cnt, color_class: "bg-purple-500".into() },
-                            ProtocolCount { label: "ICMP".into(), count: icmp_cnt, color_class: "bg-yellow-500".into() },
-                            ProtocolCount { label: "DNS".into(), count: dns_cnt, color_class: "bg-orange-500".into() },
-                            ProtocolCount { label: "TLS".into(), count: tls_cnt, color_class: "bg-cyan-500".into() },
-                            ProtocolCount { label: "Other".into(), count: other_cnt, color_class: "bg-gray-500".into() },
+                            ProtocolCount {
+                                label: "TCP".into(),
+                                count: tcp_cnt,
+                                color_class: "bg-blue-500".into(),
+                            },
+                            ProtocolCount {
+                                label: "UDP".into(),
+                                count: udp_cnt,
+                                color_class: "bg-purple-500".into(),
+                            },
+                            ProtocolCount {
+                                label: "ICMP".into(),
+                                count: icmp_cnt,
+                                color_class: "bg-yellow-500".into(),
+                            },
+                            ProtocolCount {
+                                label: "DNS".into(),
+                                count: dns_cnt,
+                                color_class: "bg-orange-500".into(),
+                            },
+                            ProtocolCount {
+                                label: "TLS".into(),
+                                count: tls_cnt,
+                                color_class: "bg-cyan-500".into(),
+                            },
+                            ProtocolCount {
+                                label: "Other".into(),
+                                count: other_cnt,
+                                color_class: "bg-gray-500".into(),
+                            },
                         ];
                         state.protocol_counts.set(updated_counts);
                     }
                 }
 
-                if tick_counter % 5 == 0 {
+                if tick_counter.is_multiple_of(5) {
                     state.capture.write().uptime_secs += 1;
 
                     if let Ok(flows) = get_flows().await {
@@ -148,13 +197,16 @@ pub fn App() -> Element {
                         state.stats.set(stats.clone());
 
                         let mut history = state.traffic_history.write();
-                        
+
                         // stats.total_bytes is cumulative. We want the delta for the chart.
                         // But wait, we don't have the previous total_bytes easily accessible unless we store it.
                         // We can store prev_total_bytes in state, or just mock a random fluctuation for the UI.
                         // Let's use a simple mock calculation based on active flows for dynamic visual appeal in the mockup.
-                        let mut mock_bytes = (stats.active_flows as u64) * 1234 + (tick_counter % 7) * 450;
-                        if mock_bytes == 0 { mock_bytes = (tick_counter % 5) * 200; }
+                        let mut mock_bytes =
+                            (stats.active_flows as u64) * 1234 + (tick_counter % 7) * 450;
+                        if mock_bytes == 0 {
+                            mock_bytes = (tick_counter % 5) * 200;
+                        }
                         let mock_sent = mock_bytes / 2 + (tick_counter % 3) * 100;
                         let mock_recv = mock_bytes - (mock_bytes / 3);
 

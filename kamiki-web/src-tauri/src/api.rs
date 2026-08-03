@@ -1,10 +1,5 @@
-use axum::{
-    extract::Query,
-    http::StatusCode,
-    response::IntoResponse,
-    Json,
-};
-use kamiki_core::{collector::CollectorConfig, Kamiki};
+use axum::{Json, extract::Query, http::StatusCode, response::IntoResponse};
+use kamiki_core::{Kamiki, collector::CollectorConfig};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -74,11 +69,9 @@ pub fn get_iface() -> &'static Arc<Mutex<String>> {
                 .output()
                 .ok()
                 .and_then(|out| {
-                    String::from_utf8(out.stdout).ok().and_then(|s| {
-                        s.split_whitespace()
-                            .nth(4)
-                            .map(|iface| iface.to_string())
-                    })
+                    String::from_utf8(out.stdout)
+                        .ok()
+                        .and_then(|s| s.split_whitespace().nth(4).map(|iface| iface.to_string()))
                 })
                 .unwrap_or_else(|| "enp0s3".into())
         });
@@ -106,7 +99,10 @@ pub async fn start_capture(body: String) -> impl IntoResponse {
         Ok(new_engine) => {
             *engine_lock = Some(new_engine);
             *get_iface().lock().unwrap() = interface.clone();
-            (StatusCode::OK, format!("Started eBPF capture on {}", interface))
+            (
+                StatusCode::OK,
+                format!("Started eBPF capture on {}", interface),
+            )
         }
         Err(err) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -138,24 +134,45 @@ pub async fn poll_packets(Query(query): Query<PollQuery>) -> Json<Vec<PacketEven
 
             // Mock Data Injector for missing process names
             if process_name == "—" {
-                let port = if event.src_port > 0 { event.src_port } else { event.dst_port };
+                let port = if event.src_port > 0 {
+                    event.src_port
+                } else {
+                    event.dst_port
+                };
                 match port {
-                    443 | 80 => { process_name = "firefox".into(); pid = 8421; },
-                    22 => { process_name = "ssh".into(); pid = 2231; },
-                    53 => { process_name = "systemd-resolve".into(); pid = 1452; },
-                    8080 | 3000 => { process_name = "curl".into(); pid = 9912; },
+                    443 | 80 => {
+                        process_name = "firefox".into();
+                        pid = 8421;
+                    }
+                    22 => {
+                        process_name = "ssh".into();
+                        pid = 2231;
+                    }
+                    53 => {
+                        process_name = "systemd-resolve".into();
+                        pid = 1452;
+                    }
+                    8080 | 3000 => {
+                        process_name = "curl".into();
+                        pid = 9912;
+                    }
                     _ => {
                         if port % 2 == 0 {
-                            process_name = "discord".into(); pid = 9122;
+                            process_name = "discord".into();
+                            pid = 9122;
                         } else if port % 3 == 0 {
-                            process_name = "spotify".into(); pid = 7721;
+                            process_name = "spotify".into();
+                            pid = 7721;
                         }
                     }
                 }
             }
 
             // Format timestamp (UTC simplified)
-            let d = event.timestamp.duration_since(std::time::UNIX_EPOCH).unwrap_or_default();
+            let d = event
+                .timestamp
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default();
             let secs = d.as_secs();
             let ms = d.subsec_millis();
             let hrs = (secs / 3600) % 24;
@@ -261,18 +278,36 @@ pub async fn get_interfaces() -> Json<Vec<InterfaceInfo>> {
             let speed = fs::read_to_string(&speed_path)
                 .ok()
                 .and_then(|s| s.trim().parse::<i32>().ok())
-                .map(|mbps| if mbps >= 1000 { format!("{} Gbps", mbps / 1000) } else { format!("{} Mbps", mbps) })
+                .map(|mbps| {
+                    if mbps >= 1000 {
+                        format!("{} Gbps", mbps / 1000)
+                    } else {
+                        format!("{} Mbps", mbps)
+                    }
+                })
                 .unwrap_or_else(|| "—".into());
 
-            ifaces.push(InterfaceInfo { name, speed, active });
+            ifaces.push(InterfaceInfo {
+                name,
+                speed,
+                active,
+            });
         }
     }
 
     if ifaces.is_empty() {
         let default_iface = get_iface().lock().unwrap().clone();
         ifaces = vec![
-            InterfaceInfo { name: default_iface, speed: "—".into(), active: true },
-            InterfaceInfo { name: "lo".into(), speed: "—".into(), active: false },
+            InterfaceInfo {
+                name: default_iface,
+                speed: "—".into(),
+                active: true,
+            },
+            InterfaceInfo {
+                name: "lo".into(),
+                speed: "—".into(),
+                active: false,
+            },
         ];
     }
     Json(ifaces)
@@ -294,7 +329,8 @@ pub async fn get_app_icon(Query(query): Query<IconQuery>) -> impl IntoResponse {
                 (axum::http::header::CACHE_CONTROL, "public, max-age=86400"),
             ],
             bytes,
-        ).into_response();
+        )
+            .into_response();
     }
 
     // Fallback system gear icon SVG
@@ -307,7 +343,8 @@ pub async fn get_app_icon(Query(query): Query<IconQuery>) -> impl IntoResponse {
             (axum::http::header::CACHE_CONTROL, "public, max-age=86400"),
         ],
         default_svg.as_bytes().to_vec(),
-    ).into_response()
+    )
+        .into_response()
 }
 
 fn find_system_icon(app_name: &str) -> Option<(Vec<u8>, &'static str)> {
@@ -315,16 +352,36 @@ fn find_system_icon(app_name: &str) -> Option<(Vec<u8>, &'static str)> {
         return None;
     }
 
-    let clean_name = app_name.split('/').last().unwrap_or(app_name).to_lowercase();
+    let clean_name = app_name
+        .split('/')
+        .next_back()
+        .unwrap_or(app_name)
+        .to_lowercase();
     let stem = clean_name.split('.').next().unwrap_or(&clean_name);
 
     let candidate_names = match stem {
         "ssh" | "bash" | "zsh" | "sh" | "konsole" | "gnome-terminal" | "alacritty" | "kitty" => {
-            vec![stem, "utilities-terminal", "terminal", "org.gnome.Terminal", "bash"]
+            vec![
+                stem,
+                "utilities-terminal",
+                "terminal",
+                "org.gnome.Terminal",
+                "bash",
+            ]
         }
         "python" | "python3" => vec![stem, "python", "python3", "applications-other"],
-        "curl" | "wget" => vec![stem, "network-transmit-receive", "utilities-terminal", "network-workgroup"],
-        "systemd" | "systemd-resolve" | "systemd-journal" => vec![stem, "system-run", "applications-system", "system-software-update"],
+        "curl" | "wget" => vec![
+            stem,
+            "network-transmit-receive",
+            "utilities-terminal",
+            "network-workgroup",
+        ],
+        "systemd" | "systemd-resolve" | "systemd-journal" => vec![
+            stem,
+            "system-run",
+            "applications-system",
+            "system-software-update",
+        ],
         _ => vec![stem],
     };
 

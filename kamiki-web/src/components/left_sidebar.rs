@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
-use crate::data::state::{AppState, NavView};
 use crate::api_client::start_capture;
+use crate::data::state::{AppState, NavView};
+use dioxus::prelude::*;
 
 pub fn LeftSidebar() -> Element {
     let mut state = use_context::<AppState>();

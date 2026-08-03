@@ -23,6 +23,7 @@ pub async fn start_capture(interface: String) -> Result<String, String> {
         .map_err(|e| e.to_string())
 }
 
+#[allow(dead_code)]
 pub async fn stop_capture() -> Result<(), String> {
     Request::post("/api/stop")
         .send()

@@ -1,6 +1,8 @@
+use crate::data::models::{
+    CaptureState, FlowData, InterfaceInfo, PacketEvent, ProtocolCount, SystemStats, TrafficSample,
+};
 use dioxus::prelude::*;
 use std::collections::VecDeque;
-use crate::data::models::{CaptureState, FlowData, InterfaceInfo, PacketEvent, ProtocolCount, SystemStats, TrafficSample};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NavView {

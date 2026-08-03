@@ -1,8 +1,9 @@
-use std::collections::HashMap;
-use dioxus::prelude::*;
-use crate::data::state::AppState;
 use crate::components::AppIcon;
+use crate::data::state::AppState;
+use dioxus::prelude::*;
+use std::collections::HashMap;
 
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 struct ProcessRowData {
     name: String,
@@ -27,6 +28,7 @@ fn format_bytes(bytes: u64) -> String {
     }
 }
 
+#[allow(non_snake_case)]
 pub fn TopProcessesTable() -> Element {
     let state = use_context::<AppState>();
     let packets = state.packets.read();
@@ -45,7 +47,9 @@ pub fn TopProcessesTable() -> Element {
                 || pkt.dst_ip.contains(&clean_q)
                 || pkt.src_ip.contains(&clean_q)
                 || pkt.dst_port.to_string().contains(&clean_q);
-            if !matches { continue; }
+            if !matches {
+                continue;
+            }
         }
         let entry = proc_map.entry(pkt.process_name.clone()).or_insert((
             pkt.pid,
@@ -58,7 +62,7 @@ pub fn TopProcessesTable() -> Element {
 
         entry.1 += 1;
         entry.4 += pkt.pkt_len as u64; // total
-        
+
         // Mock Sent/Recv
         if pkt.src_port > 0 {
             entry.2 += pkt.pkt_len as u64; // sent
@@ -69,29 +73,38 @@ pub fn TopProcessesTable() -> Element {
 
     let mut rows: Vec<ProcessRowData> = proc_map
         .into_iter()
-        .map(|(name, (pid, connections, mut sent_bytes, mut recv_bytes, total_bytes, top_remote))| {
-            // Adjust mock data to ensure sent + recv = total if they are 0
-            if sent_bytes == 0 && recv_bytes == 0 && total_bytes > 0 {
-                sent_bytes = total_bytes / 3;
-                recv_bytes = total_bytes - sent_bytes;
-            }
-
-            ProcessRowData {
+        .map(
+            |(
                 name,
-                pid_str: if pid > 0 { format!("{}", pid) } else { "—".into() },
-                connections,
-                sent_bytes,
-                recv_bytes,
-                total_bytes,
-                sent_str: format_bytes(sent_bytes),
-                recv_str: format_bytes(recv_bytes),
-                bytes_str: format_bytes(total_bytes),
-                top_remote,
-            }
-        })
+                (pid, connections, mut sent_bytes, mut recv_bytes, total_bytes, top_remote),
+            )| {
+                // Adjust mock data to ensure sent + recv = total if they are 0
+                if sent_bytes == 0 && recv_bytes == 0 && total_bytes > 0 {
+                    sent_bytes = total_bytes / 3;
+                    recv_bytes = total_bytes - sent_bytes;
+                }
+
+                ProcessRowData {
+                    name,
+                    pid_str: if pid > 0 {
+                        format!("{}", pid)
+                    } else {
+                        "—".into()
+                    },
+                    connections,
+                    sent_bytes,
+                    recv_bytes,
+                    total_bytes,
+                    sent_str: format_bytes(sent_bytes),
+                    recv_str: format_bytes(recv_bytes),
+                    bytes_str: format_bytes(total_bytes),
+                    top_remote,
+                }
+            },
+        )
         .collect();
 
-    rows.sort_by(|a, b| b.total_bytes.cmp(&a.total_bytes));
+    rows.sort_by_key(|b| std::cmp::Reverse(b.total_bytes));
     if rows.len() > 6 {
         rows.truncate(6);
     }
@@ -156,7 +169,7 @@ pub fn TopProcessesTable() -> Element {
 
                                     // Sent
                                     td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary", "{proc.sent_str}" }
-                                    
+
                                     // Received
                                     td { class: "px-3 py-1.5 font-mono text-kamiki-textSecondary", "{proc.recv_str}" }
 
@@ -174,4 +187,3 @@ pub fn TopProcessesTable() -> Element {
         }
     }
 }
-

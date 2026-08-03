@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::data::state::AppState;
+use dioxus::prelude::*;
 
 pub fn HeaderBar() -> Element {
     let mut state = use_context::<AppState>();
@@ -11,7 +11,7 @@ pub fn HeaderBar() -> Element {
     let query_val = state.search_query.read().clone();
     let mut show_menu = use_signal(|| false);
 
-    let presets = vec![
+    let presets = [
         ("tcp.port == 443", "HTTPS (443)"),
         ("process == \"firefox\"", "Firefox"),
         ("process == \"discord\"", "Discord"),

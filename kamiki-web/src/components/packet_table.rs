@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
-use crate::data::state::AppState;
 use crate::components::AppIcon;
+use crate::data::state::AppState;
+use dioxus::prelude::*;
 
 pub fn PacketTable() -> Element {
     let mut state = use_context::<AppState>();
@@ -27,7 +27,9 @@ pub fn PacketTable() -> Element {
                 } else {
                     pkt.protocol.eq_ignore_ascii_case(filter)
                 };
-                if !matches_proto { return false; }
+                if !matches_proto {
+                    return false;
+                }
             }
 
             // 2. Header Search Query filter check
@@ -36,7 +38,11 @@ pub fn PacketTable() -> Element {
                 let clean_q = q.replace("\"", "");
 
                 if clean_q.contains("port ==") {
-                    if let Some(num) = clean_q.split("==").nth(1).and_then(|s| s.trim().parse::<u16>().ok()) {
+                    if let Some(num) = clean_q
+                        .split("==")
+                        .nth(1)
+                        .and_then(|s| s.trim().parse::<u16>().ok())
+                    {
                         return pkt.src_port == num || pkt.dst_port == num;
                     }
                 }

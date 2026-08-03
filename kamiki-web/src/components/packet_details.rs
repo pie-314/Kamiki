@@ -1,13 +1,18 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
-use crate::data::state::AppState;
 use crate::components::AppIcon;
+use crate::data::state::AppState;
+use dioxus::prelude::*;
 
 pub fn PacketDetails() -> Element {
     let state = use_context::<AppState>();
     let selected_pkt = state.selected_packet();
-    let capture_iface = state.capture.read().interface.clone().unwrap_or_else(|| "—".into());
+    let capture_iface = state
+        .capture
+        .read()
+        .interface
+        .clone()
+        .unwrap_or_else(|| "—".into());
 
     rsx! {
         div { class: "bg-kamiki-panel border border-kamiki-border rounded-lg overflow-hidden flex flex-col shadow-sm select-none text-xs",

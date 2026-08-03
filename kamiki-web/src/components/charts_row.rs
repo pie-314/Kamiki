@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::data::state::AppState;
+use dioxus::prelude::*;
 
 fn generate_smooth_path(pts: &[(f64, f64)]) -> (String, String) {
     if pts.is_empty() {
@@ -9,7 +9,7 @@ fn generate_smooth_path(pts: &[(f64, f64)]) -> (String, String) {
     }
 
     let mut stroke_d = format!("M {:.1} {:.1}", pts[0].0, pts[0].1);
-    
+
     for i in 0..pts.len() - 1 {
         let (x0, y0) = pts[i];
         let (x1, y1) = pts[i + 1];
@@ -17,7 +17,10 @@ fn generate_smooth_path(pts: &[(f64, f64)]) -> (String, String) {
         let cpy1 = y0;
         let cpx2 = x0 + (x1 - x0) * 0.5;
         let cpy2 = y1;
-        stroke_d.push_str(&format!(" C {:.1} {:.1}, {:.1} {:.1}, {:.1} {:.1}", cpx1, cpy1, cpx2, cpy2, x1, y1));
+        stroke_d.push_str(&format!(
+            " C {:.1} {:.1}, {:.1} {:.1}, {:.1} {:.1}",
+            cpx1, cpy1, cpx2, cpy2, x1, y1
+        ));
     }
 
     let last_x = pts.last().map(|p| p.0).unwrap_or(200.0);
@@ -38,9 +41,19 @@ pub fn ChartsRow() -> Element {
     // 1. Build Traffic Wave SVG paths for Sent and Received
     let mut sent_pts = Vec::new();
     let mut recv_pts = Vec::new();
-    
-    let max_sent = history.iter().map(|s| s.sent_bytes_in_window).max().unwrap_or(1).max(1);
-    let max_recv = history.iter().map(|s| s.recv_bytes_in_window).max().unwrap_or(1).max(1);
+
+    let max_sent = history
+        .iter()
+        .map(|s| s.sent_bytes_in_window)
+        .max()
+        .unwrap_or(1)
+        .max(1);
+    let max_recv = history
+        .iter()
+        .map(|s| s.recv_bytes_in_window)
+        .max()
+        .unwrap_or(1)
+        .max(1);
     let max_bytes = max_sent.max(max_recv);
 
     for (idx, sample) in history.iter().enumerate() {
@@ -57,13 +70,37 @@ pub fn ChartsRow() -> Element {
 
     // 2. Compute Donut percentages and Arc Segment Lengths
     let total_proto_cnt: u32 = protocol_counts.iter().map(|p| p.count).sum();
-    let safe_total = if total_proto_cnt == 0 { 1 } else { total_proto_cnt };
+    let safe_total = if total_proto_cnt == 0 {
+        1
+    } else {
+        total_proto_cnt
+    };
 
-    let tcp_count = protocol_counts.iter().find(|p| p.label == "TCP").map(|p| p.count).unwrap_or(0);
-    let udp_count = protocol_counts.iter().find(|p| p.label == "UDP").map(|p| p.count).unwrap_or(0);
-    let tls_count = protocol_counts.iter().find(|p| p.label == "TLS").map(|p| p.count).unwrap_or(0);
-    let icmp_count = protocol_counts.iter().find(|p| p.label == "ICMP").map(|p| p.count).unwrap_or(0);
-    let other_count = protocol_counts.iter().find(|p| p.label == "Other").map(|p| p.count).unwrap_or(0);
+    let tcp_count = protocol_counts
+        .iter()
+        .find(|p| p.label == "TCP")
+        .map(|p| p.count)
+        .unwrap_or(0);
+    let udp_count = protocol_counts
+        .iter()
+        .find(|p| p.label == "UDP")
+        .map(|p| p.count)
+        .unwrap_or(0);
+    let tls_count = protocol_counts
+        .iter()
+        .find(|p| p.label == "TLS")
+        .map(|p| p.count)
+        .unwrap_or(0);
+    let icmp_count = protocol_counts
+        .iter()
+        .find(|p| p.label == "ICMP")
+        .map(|p| p.count)
+        .unwrap_or(0);
+    let other_count = protocol_counts
+        .iter()
+        .find(|p| p.label == "Other")
+        .map(|p| p.count)
+        .unwrap_or(0);
 
     let tcp_pct = (tcp_count as f64 / safe_total as f64) * 100.0;
     let udp_pct = (udp_count as f64 / safe_total as f64) * 100.0;

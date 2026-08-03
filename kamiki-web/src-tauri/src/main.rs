@@ -1,8 +1,8 @@
 mod api;
 
 use axum::{
-    routing::{get, post},
     Router,
+    routing::{get, post},
 };
 use clap::Parser;
 use std::net::SocketAddr;
@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
 
     let args = Args::parse();
-    
+
     if let Some(iface) = args.interface {
         unsafe {
             std::env::set_var("KAMIKI_INTERFACE", iface);

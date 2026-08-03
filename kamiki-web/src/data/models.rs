@@ -49,25 +49,13 @@ pub struct InterfaceInfo {
 }
 
 /// Live capture state tracked on the client
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct CaptureState {
     pub interface: Option<String>,
     pub is_live: bool,
     pub uptime_secs: u64,
     pub total_events: u64,
     pub dropped: u64,
-}
-
-impl Default for CaptureState {
-    fn default() -> Self {
-        Self {
-            interface: None,
-            is_live: false,
-            uptime_secs: 0,
-            total_events: 0,
-            dropped: 0,
-        }
-    }
 }
 
 impl CaptureState {

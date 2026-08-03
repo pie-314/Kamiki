@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::components::{HexDump, PacketDetails, ProtocolHierarchy};
+use dioxus::prelude::*;
 
 pub fn RightSidebar() -> Element {
     rsx! {

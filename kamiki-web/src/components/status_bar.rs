@@ -1,15 +1,22 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::data::state::AppState;
+use dioxus::prelude::*;
 
 pub fn StatusBar() -> Element {
     let state = use_context::<AppState>();
     let stats = state.stats.read();
     let cap = state.capture.read();
 
-    let iface = cap.interface.clone().unwrap_or_else(|| stats.interface.clone());
-    let kernel = if stats.kernel.is_empty() { "Linux".into() } else { stats.kernel.clone() };
+    let iface = cap
+        .interface
+        .clone()
+        .unwrap_or_else(|| stats.interface.clone());
+    let kernel = if stats.kernel.is_empty() {
+        "Linux".into()
+    } else {
+        stats.kernel.clone()
+    };
 
     let bytes_formatted = if stats.total_bytes > 1_000_000 {
         format!("{:.1} MB", stats.total_bytes as f64 / 1_000_000.0)

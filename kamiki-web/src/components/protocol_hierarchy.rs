@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
 use crate::data::state::AppState;
+use dioxus::prelude::*;
 
 pub fn ProtocolHierarchy() -> Element {
     let state = use_context::<AppState>();
